@@ -1,0 +1,25 @@
+﻿
+@{
+    ViewData["Title"] = "Submit Claim";
+}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card p-4 shadow" style="width:500px;">
+        <h3 class="text-center mb-4">Submit Claim</h3>
+        <form asp-action="Submit" method="post">
+            <div class="mb-3">
+                <label class="form-label">Claim Title</label>
+                <input name="Title" class="form-control" placeholder="Enter claim title" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="Description" class="form-control" rows="4" placeholder="Describe your claim" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Submit Claim</button>
+        </form>
+    </div>
+</div>

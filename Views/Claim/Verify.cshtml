@@ -1,0 +1,36 @@
+﻿@model List<ClaimManagementsystem.Models.Claim>
+@{
+    ViewBag.Title = "Verfy Claims";
+}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card p-4 shadow" style="width:500px;">
+        <h2 class="text-center mb-4">Verify Claims</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Claim ID</th>
+                    <th>Claim Type</th>
+                    <th>Lecturer Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Date Submitted</th>
+                    <th>Documents</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model)
+                {
+                    <tr>
+                        <td>@claim.Id</td>
+                        <td>@claim.ClaimType</td>
+                        <td>@claim.LecturerName</td>
+                        <td>@claim.Description</td>
+                        <td>@claim.Status</td>
+                        <td>@claim.DateSubmitted.ToShortDateString()</td>
+
+
+                    </tr>
+                }
+        </table>
+    </div>
+</div>

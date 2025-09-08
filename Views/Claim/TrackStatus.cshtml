@@ -1,0 +1,50 @@
+﻿@model List<ClaimManagementsystem.Models.Claim>
+@{
+    ViewData["Title"] = "Approve Claim";
+    
+}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card p-4 shadow" style="width:600px;">
+        <h2 class="text-center mb-4">Approve Claims</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Claim ID</th>
+                    <th>Claim Type</th>
+                    <th>Lecturer Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Date Submitted</th>
+                    <th>Documents</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model)
+                {
+                    if (claim.Status == "Verified")
+                    {
+                        <tr>
+                            <td>@claim.Id</td>
+                            <td>@claim.ClaimType</td>
+                            <td>@claim.LecturerName</td>
+                            <td>@claim.Description</td>
+                            <td>@claim.Status</td>
+                            <td>@claim.DateSubmitted.ToShortDateString()</td>
+
+                            <td>
+                                <form asp-action="Approve" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="@claim.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm mb-1">Approve</button>
+                                </form>
+                                <form asp-action="Reject" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="@claim.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm mb-1">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

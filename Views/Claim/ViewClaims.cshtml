@@ -1,0 +1,39 @@
+﻿@model List<ClaimManagementsystem.Models.Claim>
+@{
+    ViewBag.Title = "View Claims";
+  
+}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card p-4 shadow" style="width:600px;">
+        <h2 class="text-center mb-4">View All Claims</h2>
+        <table class="table-bordered mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>Claim ID</th>
+                    <th>Description</th>
+                    <th>Lecturer Name</th>
+                    <th>Status</th>
+                    <th>Date Submitted</th>
+                    <th>Document</th>
+                    <th>Submitted By (User ID)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model)
+                {
+                    <tr>
+                        <td>@claim.Id</td>
+                        <td>@claim.Description</td>
+                        <td>@claim.LecturerName</td>
+                        <td>@claim.Status</td>
+                        <td>@claim.DateSubmitted.ToShortDateString()</td>
+                        <td>@claim.Documents</td>
+                        <td>@claim.UserId</td>
+                    </tr>
+                }
+            </tbody>
+
+
+        </table>
+    </div>
+</div>
