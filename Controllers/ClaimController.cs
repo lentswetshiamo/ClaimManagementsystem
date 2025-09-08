@@ -16,7 +16,7 @@ namespace ClaimManagementsystem.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult SubmitClaim(Claim claim, Lecturer lecturer)
+        public IActionResult Submit(Claim claim, Lecturer lecturer)
         {
             claim.Id = claims.Count + 1;
             //Use lecturer model to get lecturer details
@@ -107,7 +107,7 @@ namespace ClaimManagementsystem.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult ViewClaima()
+        public IActionResult ViewClaim()
         {
             var role = TempData["UserRole"]?.ToString();
             if (role != "Programme Coordinator" && role != "Academic Manager")
