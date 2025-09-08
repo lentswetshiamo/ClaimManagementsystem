@@ -42,12 +42,18 @@ namespace ClaimManagementsystem.Controllers
             TempData["UserRole"] = "Lecturer";
             return RedirectToAction("Index", "Dashboard");
         }
-
-        [HttpPost]
+        [HttpGet]
         public IActionResult Logout()
         {
+            TempData["UserName"] = null;
+            TempData["UserRole"] = null;
+            TempData.Remove("UserName");
+            TempData.Remove("UserRole");
             TempData.Clear();
+
             return RedirectToAction("Login");
+
         }
     }
 }
+

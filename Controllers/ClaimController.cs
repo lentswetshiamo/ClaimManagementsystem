@@ -9,7 +9,7 @@ namespace ClaimManagementsystem.Controllers
         public static List<User> users = new List<User>();
         public static List<Lecturer> lecturers = new List<Lecturer>();
         [HttpGet]
-        public IActionResult SubmitClaim()
+        public IActionResult Submit()
         {
             ViewBag.Users = users;
             ViewBag.Lecturers = lecturers;
