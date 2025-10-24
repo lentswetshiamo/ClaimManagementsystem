@@ -1,59 +1,66 @@
 ﻿using ClaimManagementsystem.Models;
+using ClaimManagementsystem.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClaimManagementsystem.Controllers
 {
     public class AccountController : Controller
     {
-        public static List<User> users = new List<User>();
-        [HttpGet]
-        public IActionResult Register()
+        private readonly AuthService _authService;
+
+        public AccountController(AuthService authService)
+        {
+            _authService = authService;
+        }
+
+        public IActionResult AccountPage()
         {
             return View();
         }
-        [HttpPost]
-        public IActionResult Register(User user)
-        {
-            user.Id = users.Count + 1;
-            users.Add(user);
-            TempData["Success"] = "Registration successful. Please log in.";
-            return RedirectToAction("Login");
-        }
-        [HttpGet]
-        public IActionResult Login()
+
+        public IActionResult LoginPage()
         {
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        [ValidateAntiForgeryToken]
+        public IActionResult Login(LoginModel model)
         {
-            // Corrected the variable name to reference the 'users' list
-            var user = users.Find(u => u.Email == email && u.Password == password);
-            if (user != null)
+            if (ModelState.IsValid)
             {
-                TempData["UserName"] = user.Name;
-                TempData["UserRole"] = user.Role;
-                return RedirectToAction("Index", "Dashboard");
+                var user = _authService.Authenticate(model.Email, model.Password);
+                if (user != null)
+                {
+                    HttpContext.Session.SetString("UserId", user.UserId.ToString());
+                    HttpContext.Session.SetString("UserName", user.Name ?? "");
+                    HttpContext.Session.SetString("UserRole", user.Role ?? "");
+                    HttpContext.Session.SetString("UserEmail", user.Email ?? "");
+
+                    // Redirect to the Dashboard action in the controller matching the role (e.g., "Lecturer")
+                    return RedirectToAction("Dashboard", user.Role);
+                }
+
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
 
-            // If user is not found, still allow login with dummy redirect
-            TempData["UserName"] = "Demo User";
-            TempData["UserRole"] = "Lecturer";
-            return RedirectToAction("Index", "Dashboard");
+            return View("LoginPage", model);
         }
-        [HttpGet]
+
         public IActionResult Logout()
         {
-            TempData["UserName"] = null;
-            TempData["UserRole"] = null;
-            TempData.Remove("UserName");
-            TempData.Remove("UserRole");
-            TempData.Clear();
+            HttpContext.Session.Clear();
+            return RedirectToAction("LoginPage");
+        }
 
-            return RedirectToAction("Login");
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
 
+        public IActionResult Profile()
+        {
+            return View();
         }
     }
 }
-

@@ -1,0 +1,251 @@
+﻿@model ClaimManagementsystem.Models.CoordinatorDashboard
+
+@{
+    ViewData["Title"] = "Coordinator Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-emerald-light">
+                <div class="card-body py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-1">Welcome, @Model.UserName!</h1>
+                            <p class="mb-0 text-emerald">Programme Coordinator Dashboard</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-warning fs-6">@Model.PendingReviews.Count Claims Pending Review</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.PendingReviews.Count</h4>
+                            <p class="text-muted mb-0">Pending Review</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card approved">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.RecentApprovals.Count</h4>
+                            <p class="text-muted mb-0">Approved This Week</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@(DateTime.Now.Day <= 5 ? "On Time" : "Overdue")</h4>
+                            <p class="text-muted mb-0">Review Status</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">8</h4>
+                            <p class="text-muted mb-0">Active Lecturers</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Pending Reviews -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-check me-2 text-warning"></i>Claims Pending Review</h5>
+                    <a href="/Coordinator/ReviewClaims" class="btn btn-sm btn-emerald">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.PendingReviews.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Lecturer</th>
+                                        <th>Period</th>
+                                        <th>Amount</th>
+                                        <th>Submitted</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.PendingReviews.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@claim.UserName</td>
+                                            <td>@claim.Month @claim.Year</td>
+                                            <td>R @claim.TotalAmount.ToString("N2")</td>
+                                            <td>@claim.SubmittedDate.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                <a href="/Coordinator/ClaimReview/@claim.ClaimId" class="btn btn-sm btn-outline-emerald">
+                                                    Review
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <p class="text-muted">All claims have been reviewed</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Approvals -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2 text-emerald"></i>Recent Approvals</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentApprovals.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Lecturer</th>
+                                        <th>Period</th>
+                                        <th>Amount</th>
+                                        <th>Approved</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.RecentApprovals)
+                                    {
+                                        <tr>
+                                            <td>@claim.UserName</td>
+                                            <td>@claim.Month @claim.Year</td>
+                                            <td>R @claim.TotalAmount.ToString("N2")</td>
+                                            <td>@claim.ApprovedDate?.ToString("dd MMM yyyy")</td>
+                                            <td><span class="badge badge-approved">@claim.Status</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent approvals</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Coordinator Actions -->
+        <div class="col-lg-4 mb-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-rocket me-2 text-emerald"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Coordinator/ReviewClaims" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-clipboard-check me-2"></i>Review Claims
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-chart-bar me-2"></i>Programme Reports
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-envelope me-2"></i>Send Notifications
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2 text-emerald"></i>Review Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Approval Rate</small>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 85%"></div>
+                        </div>
+                        <small>85%</small>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Average Processing Time</small>
+                        <div class="d-flex justify-content-between">
+                            <small>2.3 days</small>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <small class="text-muted">Monthly Volume</small>
+                        <div class="d-flex justify-content-between">
+                            <small>~45 claims</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    }
+}

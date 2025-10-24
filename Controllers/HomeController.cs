@@ -28,5 +28,30 @@ namespace ClaimManagementsystem.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        public IActionResult Index()
+        {
+            if (HttpContext.Session.GetString("UserId") != null)
+            {
+                var role = HttpContext.Session.GetString("UserRole");
+                return RedirectToAction("Dashboard", role);
+            }
+            return View();
+        }
+
+        public IActionResult About()
+        {
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
     }
 }
+    

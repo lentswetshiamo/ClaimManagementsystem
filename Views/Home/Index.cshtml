@@ -1,12 +1,140 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home - Caim Management System";
 }
-<div class="container text-center" style="margin-top: 80px;">
-    <h1>Welcome to the Contract Claim Management System</h1>
-    <p class="lead">Please login or register to continue.</p>
 
-    <div class="d-flex justify-content-center gap-3 mt-4">
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">Login</a>
-        <a asp-controller="Account" asp-action="Register" class="btn btn-success btn-lg">Register</a>
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row align-items-center min-vh-50 bg-emerald-light py-5">
+        <div class="col-lg-6">
+            <div class="px-4 px-lg-5">
+                <h1 class="display-4 fw-bold text-emerald mb-4">
+                    Caim Management System
+                </h1>
+                <p class="lead text-muted mb-4">
+                    Streamline your contract lecturer claim process with our comprehensive digital solution. 
+                    Submit, review, and approve claims efficiently with complete transparency and real-time tracking.
+                </p>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="/Account/Login" class="btn btn-emerald btn-lg px-4 me-md-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Get Started
+                    </a>
+                    <a href="#features" class="btn btn-outline-emerald btn-lg px-4">
+                        <i class="fas fa-info-circle me-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 text-center">
+            <img src="https://cdn-icons-png.flaticon.com/512/3063/3063812.png" alt="CMS Illustration" class="img-fluid" style="max-height: 400px;">
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="row py-5 bg-light">
+        <div class="col-12 text-center mb-5">
+            <h2 class="h1 text-emerald mb-3">Why Choose Our System?</h2>
+            <p class="lead text-muted">Designed specifically for educational institutions</p>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-emerald-lightest text-emerald rounded-circle mx-auto mb-3">
+                        <i class="fas fa-bolt fa-2x"></i>
+                    </div>
+                    <h4 class="text-emerald">Fast Processing</h4>
+                    <p class="text-muted">Reduce claim processing time from weeks to just days with automated workflows and real-time tracking.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-emerald-lightest text-emerald rounded-circle mx-auto mb-3">
+                        <i class="fas fa-shield-alt fa-2x"></i>
+                    </div>
+                    <h4 class="text-emerald">Secure & Compliant</h4>
+                    <p class="text-muted">Bank-level security with complete audit trails and compliance with institutional policies.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-emerald-lightest text-emerald rounded-circle mx-auto mb-3">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <h4 class="text-emerald">Real-time Analytics</h4>
+                    <p class="text-muted">Comprehensive reporting and analytics to help you make data-driven decisions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="row py-5">
+        <div class="col-12 text-center mb-5">
+            <h2 class="h1 text-emerald mb-3">How It Works</h2>
+            <p class="lead text-muted">Simple four-step process for efficient claim management</p>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 text-center mb-4">
+            <div class="step-number bg-emerald text-white rounded-circle mx-auto mb-3">1</div>
+            <h5 class="text-emerald">Submit Claim</h5>
+            <p class="text-muted">Lecturers submit monthly claims with detailed breakdowns and supporting documents.</p>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 text-center mb-4">
+            <div class="step-number bg-emerald text-white rounded-circle mx-auto mb-3">2</div>
+            <h5 class="text-emerald">Coordinator Review</h5>
+            <p class="text-muted">Programme coordinators review claims for accuracy and policy compliance.</p>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 text-center mb-4">
+            <div class="step-number bg-emerald text-white rounded-circle mx-auto mb-3">3</div>
+            <h5 class="text-emerald">Manager Approval</h5>
+            <p class="text-muted">Academic managers provide final approval and authorization for payment.</p>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 text-center mb-4">
+            <div class="step-number bg-emerald text-white rounded-circle mx-auto mb-3">4</div>
+            <h5 class="text-emerald">Payment Processing</h5>
+            <p class="text-muted">Approved claims are automatically forwarded to finance for payment processing.</p>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="row py-5 bg-emerald text-white">
+        <div class="col-12 text-center">
+            <h2 class="h1 mb-3">Ready to Get Started?</h2>
+            <p class="lead mb-4 opacity-75">Join hundreds of educational institutions using our system</p>
+            <a href="/Account/Login" class="btn btn-light btn-lg px-5">
+                <i class="fas fa-rocket me-2"></i>Start Now
+            </a>
+        </div>
     </div>
 </div>
+
+<style>
+    .min-vh-50 {
+        min-height: 50vh;
+    }
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .step-number {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+</style>

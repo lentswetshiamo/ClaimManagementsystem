@@ -1,0 +1,254 @@
+﻿@model ClaimManagementsystem.Models.Claim
+
+@{
+    ViewData["Title"] = "Claim Details";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0"><i class="fas fa-file-invoice me-2 text-emerald"></i>Claim #@Model.ClaimId</h1>
+                <div>
+                    <a href="/Lecturer/ClaimHistory" class="btn btn-outline-emerald me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to History
+                    </a>
+                    <button class="btn btn-emerald" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted">Detailed view of your claim submission</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Claim Information -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Claim Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Claim ID:</th>
+                                    <td><strong>#@Model.ClaimId</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Period:</th>
+                                    <td>@Model.Month @Model.Year</td>
+                                </tr>
+                                <tr>
+                                    <th>Submitted:</th>
+                                    <td>@Model.SubmittedDate.ToString("dd MMMM yyyy")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Status:</th>
+                                    <td>
+                                        @if (Model.Status == "Approved Level 2")
+                                        {
+                                            <span class="badge badge-approved">Approved</span>
+                                        }
+                                        else if (Model.Status == "Rejected")
+                                        {
+                                            <span class="badge badge-rejected">Rejected</span>
+                                        }
+                                        else if (Model.Status == "Submitted")
+                                        {
+                                            <span class="badge badge-submitted">Under Review</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@Model.Status</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Total Hours:</th>
+                                    <td>@Model.TotalHours.ToString("F1") hours</td>
+                                </tr>
+                                <tr>
+                                    <th>Hourly Rate:</th>
+                                    <td>R @Model.HourlyRate.ToString("F2")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Claim Items -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list-ol me-2"></i>Claim Items Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Module/Description</th>
+                                    <th>Hours</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Sample data - replace with actual claim items -->
+                                <tr>
+                                    <td>PROG2B - Programming 2B Lectures</td>
+                                    <td>20.0</td>
+                                    <td>R @Model.HourlyRate.ToString("F2")</td>
+                                    <td>R @(20 * Model.HourlyRate).ToString("F2")</td>
+                                </tr>
+                                <tr>
+                                    <td>PROG2B - Tutorial Sessions</td>
+                                    <td>15.5</td>
+                                    <td>R @Model.HourlyRate.ToString("F2")</td>
+                                    <td>R @(15.5 * Model.HourlyRate).ToString("F2")</td>
+                                </tr>
+                                <tr>
+                                    <td>Student Consultations</td>
+                                    <td>10.0</td>
+                                    <td>R @Model.HourlyRate.ToString("F2")</td>
+                                    <td>R @(10 * Model.HourlyRate).ToString("F2")</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-emerald">
+                                    <th colspan="3" class="text-end">Total Amount:</th>
+                                    <th>R @Model.TotalAmount.ToString("F2")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status Timeline -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-stream me-2"></i>Status Timeline</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Claim Submitted</h6>
+                                <p class="text-muted mb-0">@Model.SubmittedDate.ToString("dd MMM yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                        @if (Model.Status == "Approved Level 1" || Model.Status == "Approved Level 2")
+                        {
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Approved by Coordinator</h6>
+                                    <p class="text-muted mb-0">@Model.SubmittedDate.AddDays(1).ToString("dd MMM yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Status == "Approved Level 2")
+                        {
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker bg-success"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Approved by Manager</h6>
+                                    <p class="text-muted mb-0">@Model.SubmittedDate.AddDays(2).ToString("dd MMM yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Status == "Rejected")
+                        {
+                            <div class="timeline-item current">
+                                <div class="timeline-marker bg-danger"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Claim Rejected</h6>
+                                    <p class="text-muted mb-0">@Model.SubmittedDate.AddDays(1).ToString("dd MMM yyyy HH:mm")</p>
+                                    <p class="text-danger mb-0"><small>@Model.Comments</small></p>
+                                </div>
+                            </div>
+                        }
+                        else if (!Model.Status.Contains("Approved"))
+                        {
+                            <div class="timeline-item current">
+                                <div class="timeline-marker bg-warning"></div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">@Model.Status</h6>
+                                    <p class="text-muted mb-0">Waiting for review</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.Status == "Rejected")
+                        {
+                            <a href="/Lecturer/SubmitClaim" class="btn btn-outline-emerald text-start">
+                                <i class="fas fa-edit me-2"></i>Resubmit Claim
+                            </a>
+                        }
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-envelope me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -30px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        top: 4px;
+    }
+
+    .timeline-item.completed .timeline-content {
+        opacity: 1;
+    }
+
+    .timeline-item.current .timeline-content {
+        font-weight: 600;
+    }
+
+    .table-emerald {
+        background-color: var(--emerald-lightest);
+    }
+</style>

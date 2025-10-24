@@ -1,6 +1,66 @@
-﻿namespace ClaimManagementsystem.Views.Shared
-{
-    public class _Navigation
-    {
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+<ul class="navbar-nav me-auto">
+    @{
+        var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+        var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
     }
-}
+
+    @if (!string.IsNullOrEmpty(userName))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/@userRole/Dashboard">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+            </a>
+        </li>
+
+        @if (userRole == "Lecturer")
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="/Lecturer/SubmitClaim">
+                    <i class="fas fa-plus-circle me-1"></i>Submit Claim
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Lecturer/ClaimHistory">
+                    <i class="fas fa-history me-1"></i>Claim History
+                </a>
+            </li>
+        }
+        else if (userRole == "Coordinator")
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="/Coordinator/ReviewClaims">
+                    <i class="fas fa-clipboard-check me-1"></i>Review Claims
+                </a>
+            </li>
+        }
+        else if (userRole == "Manager")
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="/Manager/FinalApproval">
+                    <i class="fas fa-check-double me-1"></i>Final Approval
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Manager/Reports">
+                    <i class="fas fa-chart-bar me-1"></i>Reports
+                </a>
+            </li>
+        }
+        else if (userRole == "Admin")
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="/Admin/UserManagement">
+                    <i class="fas fa-users me-1"></i>User Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Admin/SystemLogs">
+                    <i class="fas fa-server me-1"></i>System Logs
+                </a>
+            </li>
+        }
+    }
+</ul>

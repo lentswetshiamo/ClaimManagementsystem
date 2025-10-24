@@ -1,15 +1,144 @@
 ﻿@{
-    ViewData["Title"] = "Upload Documents";
+    Layout = "_Layout";
+    var claim = ViewBag.Claim as ClaimManagementsystem.Models.Claim;
+    var files = ViewBag.UploadedFiles as List<string> ?? new List<string>();
+    const long MaxBytes = 5 * 1024 * 1024;
 }
-<div class="container mt-5 d-flex justify-content-center">
-    <div class="card p-4 shadow" style="width:500px;">
-        <h2 class="text-center mb-4">Upload Supporting Documents</h2>
-        <form enctype="multipart/form-data">
-            <div class="mb-3">
-                <label class="form-label">Select Documents</label>
-                <input type="file" class="form-control" multiple />
-            </div>
-            <button type="submit" class="btn btn-secondary w-100">Upload</button>
-        </form>
+@section Styles {
+    <style>
+        .upload-card { max-width: 760px; margin: 18px auto; padding: 18px; border-radius: 8px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        .upload-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .file-list li { margin-bottom:8px; }
+        .muted { color:#6c757d; font-size:.95rem; }
+    </style>
+}
+
+<div class="upload-card">
+    <div class="upload-header">
+        <div>
+            <h5 class="mb-0">Upload supporting document</h5>
+            <small class="muted">Attach files to claim @((claim != null) ? claim.ClaimId.ToString() : "(unknown)")</small>
+        </div>
+        <div>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to dashboard</a>
+        </div>
     </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success">@TempData["Message"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (claim == null)
+    {
+        <div class="alert alert-warning">Claim not found. Please select a valid claim from your dashboard.</div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <strong>Claim:</strong> @claim.ClaimId &nbsp; • &nbsp; <strong>Status:</strong> 
+            @if(string.Equals(claim.Status, "Pending", StringComparison.OrdinalIgnoreCase)) {
+                <span class="badge bg-warning text-dark">Pending</span>
+            } else if(string.Equals(claim.Status, "Approved", StringComparison.OrdinalIgnoreCase)) {
+                <span class="badge bg-success">Approved</span>
+            } else if(string.Equals(claim.Status, "Rejected", StringComparison.OrdinalIgnoreCase)) {
+                <span class="badge bg-danger">Rejected</span>
+            } else {
+                <span class="badge bg-secondary">@claim.Status</span>
+            }
+            <div class="muted">Submitted: @claim.SubmittedDate.ToString("g")</div>
+        </div>
+
+        <form asp-controller="Claim" asp-action="UploadDocuments" method="post" enctype="multipart/form-data" id="uploadForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@claim.ClaimId" />
+            <div class="mb-3">
+                <label class="form-label">Choose file</label>
+                <input type="file" name="file" id="fileInput" class="form-control" accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg" />
+                <div class="muted file-name" id="selectedFile">No file selected. Allowed: .pdf, .docx, .xlsx, .png, .jpg. Max 5 MB.</div>
+                <div class="text-danger" id="fileErr" style="display:none;"></div>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Upload document</button>
+            </div>
+        </form>
+
+        <hr />
+
+        <h6>Uploaded files</h6>
+        @if (!files.Any())
+        {
+            <div class="muted">No files uploaded yet for this claim.</div>
+        }
+        else
+        {
+            <ul class="list-unstyled file-list">
+                @foreach (var f in files)
+                {
+                    var url = Url.Content("~/uploads/" + f);
+                    <li>
+                        <a href="@url" target="_blank" rel="noopener noreferrer">@f</a>
+                        <span class="muted"> — <small>open in new tab</small></span>
+                    </li>
+                }
+            </ul>
+        }
+    }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const fileInput = document.getElementById('fileInput');
+            const selected = document.getElementById('selectedFile');
+            const fileErr = document.getElementById('fileErr');
+            const maxBytes = @MaxBytes;
+            const allowed = ['.pdf', '.docx', '.xlsx', '.png', '.jpg', '.jpeg'];
+
+            fileInput?.addEventListener('change', function () {
+                fileErr.style.display = 'none';
+                fileErr.textContent = '';
+                const f = fileInput.files && fileInput.files[0];
+                if (!f) {
+                    selected.textContent = 'No file selected. Allowed: .pdf, .docx, .xlsx, .png, .jpg. Max 5 MB.';
+                    return;
+                }
+                const ext = (f.name.substring(f.name.lastIndexOf('.')) || '').toLowerCase();
+                if (f.size > maxBytes) {
+                    fileErr.textContent = 'File too large. Max ' + (maxBytes / (1024*1024)) + ' MB.';
+                    fileErr.style.display = 'block';
+                    fileInput.value = '';
+                    selected.textContent = 'No file selected';
+                    return;
+                }
+                if (!allowed.includes(ext)) {
+                    fileErr.textContent = 'Invalid file type.';
+                    fileErr.style.display = 'block';
+                    fileInput.value = '';
+                    selected.textContent = 'No file selected';
+                    return;
+                }
+                selected.textContent = 'Selected: ' + f.name;
+            });
+
+            document.getElementById('uploadForm')?.addEventListener('submit', function (e) {
+                const f = fileInput.files && fileInput.files[0];
+                if (!f) {
+                    e.preventDefault();
+                    alert('Please choose a file to upload.');
+                    return;
+                }
+                const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+                if (!allowed.includes(ext) || f.size > maxBytes) {
+                    e.preventDefault();
+                    alert('Selected file is invalid. Check type and size.');
+                    return;
+                }
+            });
+        })();
+    </script>
+}

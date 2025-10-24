@@ -1,0 +1,117 @@
+﻿@model List<ClaimManagementsystem.Models.AuditLog>
+@{
+    ViewData["Title"] = "System Logs";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0"><i class="fas fa-server me-2 text-emerald"></i>System Logs</h1>
+                <div>
+                    <button class="btn btn-outline-emerald me-2">
+                        <i class="fas fa-download me-2"></i>Export Logs
+                    </button>
+                    <button class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Clear Logs
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted">System audit logs and activity tracking</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select">
+                                <option>Last 24 hours</option>
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Custom range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Log Level</label>
+                            <select class="form-select">
+                                <option>All Levels</option>
+                                <option>Information</option>
+                                <option>Warning</option>
+                                <option>Error</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">User</label>
+                            <select class="form-select">
+                                <option>All Users</option>
+                                <option>Dr. John Smith</option>
+                                <option>Prof. Sarah Johnson</option>
+                                <option>Dr. Michael Brown</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-emerald w-100">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Audit Logs</h5>
+                    <span class="badge bg-emerald">@Model.Count entries</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Entity</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var log in Model)
+                                {
+                                    <tr>
+                                        <td>@log.UpdatedOn.ToString("dd MMM yyyy HH:mm:ss")</td>
+                                        <td>@log.UserName</td>
+                                        <td>
+                                            <span class="badge 
+                                                @(log.Action.Contains("Create") ? "bg-success" : 
+                                                  log.Action.Contains("Update") ? "bg-warning" : 
+                                                  log.Action.Contains("Delete") ? "bg-danger" : "bg-info")">
+                                                @log.Action
+                                            </span>
+                                        </td>
+                                        <td>@log.Entity</td>
+                                        <td>
+                                            <small class="text-muted">@log.Action @log.Entity #@log.EntityId</small>
+                                        </td>
+                                        <td><small class="text-muted">@log.IpAddress</small></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

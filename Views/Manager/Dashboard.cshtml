@@ -1,0 +1,229 @@
+﻿@model ClaimManagementsystem.Models.ManagerDashboard
+
+@{
+    ViewData["Title"] = "Manager Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-emerald-light">
+                <div class="card-body py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-1">Welcome, @Model.UserName!</h1>
+                            <p class="mb-0 text-emerald">Academic Manager Dashboard</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-warning fs-6">@Model.FinalApprovals.Count Claims Awaiting Final Approval</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.FinalApprovals.Count</h4>
+                            <p class="text-muted mb-0">Final Approval</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card approved">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">R @(Model.SystemStats.TotalAmount.ToString("N2"))</h4>
+                            <p class="text-muted mb-0">Monthly Total</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.SystemStats.TotalClaims</h4>
+                            <p class="text-muted mb-0">Total Claims</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.SystemStats.ApprovedClaims</h4>
+                            <p class="text-muted mb-0">Approved</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Final Approvals -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-check-double me-2 text-warning"></i>Claims Awaiting Final Approval</h5>
+                    <a href="/Manager/FinalApproval" class="btn btn-sm btn-emerald">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.FinalApprovals.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Claim ID</th>
+                                        <th>Lecturer</th>
+                                        <th>Coordinator</th>
+                                        <th>Amount</th>
+                                        <th>Submitted</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.FinalApprovals.Take(5))
+                                    {
+                                        <tr>
+                                            <td><strong>#@claim.ClaimId</strong></td>
+                                            <td>@claim.UserName</td>
+                                            <td>Prof. Sarah Johnson</td>
+                                            <td>R @claim.TotalAmount.ToString("N2")</td>
+                                            <td>@claim.SubmittedDate.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                <a href="/Manager/FinalApproval" class="btn btn-sm btn-outline-emerald">
+                                                    Review
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <p class="text-muted">No claims awaiting final approval</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- System Overview -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-emerald"></i>System Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Approval Rate</h6>
+                            <h4 class="text-success">92%</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Avg Processing</h6>
+                            <h4 class="text-info">2.1 days</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Monthly Budget</h6>
+                            <h4 class="text-emerald">85%</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Active Lecturers</h6>
+                            <h4 class="text-brown">24</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manager Actions & Activity -->
+        <div class="col-lg-4 mb-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-rocket me-2 text-emerald"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Manager/FinalApproval" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-check-double me-2"></i>Final Approvals
+                        </a>
+                        <a href="/Manager/Reports" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-chart-pie me-2"></i>View Reports
+                        </a>
+                        <a href="/Manager/SystemConfig" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-cog me-2"></i>System Config
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-users me-2"></i>User Management
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-history me-2 text-emerald"></i>Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    <div class="activity-feed">
+                        @foreach (var activity in Model.RecentActivities)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">@activity.Description</div>
+                                    <div class="activity-time">@activity.Timestamp.ToString("dd MMM HH:mm")</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

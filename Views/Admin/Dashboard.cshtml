@@ -1,0 +1,261 @@
+﻿@model ClaimManagementsystem.Models.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-emerald-light">
+                <div class="card-body py-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-1">Welcome, @Model.UserName!</h1>
+                            <p class="mb-0 text-emerald">System Administrator Dashboard</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-success fs-6">System Status: Operational</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.SystemStats.TotalUsers</h4>
+                            <p class="text-muted mb-0">Total Users</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.SystemStats.ActiveSessions</h4>
+                            <p class="text-muted mb-0">Active Sessions</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.SystemStats.SystemUptime</h4>
+                            <p class="text-muted mb-0">System Uptime</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">@Model.SystemStats.StorageUsed</h4>
+                            <p class="text-muted mb-0">Storage Used</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="widget-icon">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- System Overview -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>System Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h6 class="text-muted">CPU Usage</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 45%"></div>
+                            </div>
+                            <small>45%</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Memory</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: 62%"></div>
+                            </div>
+                            <small>62%</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Disk I/O</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 28%"></div>
+                            </div>
+                            <small>28%</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Network</h6>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-emerald" style="width: 15%"></div>
+                            </div>
+                            <small>15%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Logs -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent System Logs</h5>
+                    <a href="/Admin/SystemLogs" class="btn btn-sm btn-emerald">View All Logs</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Level</th>
+                                    <th>Message</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var log in Model.RecentLogs)
+                                {
+                                    <tr>
+                                        <td>@log.Timestamp.ToString("HH:mm")</td>
+                                        <td>
+                                            @if (log.Level == "Error")
+                                            {
+                                                <span class="badge bg-danger">Error</span>
+                                            }
+                                            else if (log.Level == "Warning")
+                                            {
+                                                <span class="badge bg-warning">Warning</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Info</span>
+                                            }
+                                        </td>
+                                        <td><small>@log.Message</small></td>
+                                        <td><small>@log.UserName</small></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-rocket me-2 text-emerald"></i>Admin Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Admin/UserManagement" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-user-cog me-2"></i>User Management
+                        </a>
+                        <a href="/Admin/SystemLogs" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-server me-2"></i>System Logs
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-database me-2"></i>Database Backup
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-shield-alt me-2"></i>Security Settings
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-plug me-2"></i>API Management
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-heartbeat me-2 text-emerald"></i>System Health</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Database</small>
+                            <small class="text-success">Healthy</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Authentication</small>
+                            <small class="text-success">Healthy</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>File Storage</small>
+                            <small class="text-warning">Warning</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Email Service</small>
+                            <small class="text-success">Healthy</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,94 @@
+﻿@model List<ClaimManagementsystem.Models.Claim>
+
+@{
+    ViewData["Title"] = "Review Claims";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0"><i class="fas fa-clipboard-check me-2 text-emerald"></i>Review Claims</h1>
+                <a href="/Coordinator/Dashboard" class="btn btn-outline-emerald">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            <p class="text-muted">Review and approve pending claims from lecturers</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2 text-warning"></i>Pending Review</h5>
+                    <span class="badge bg-warning">@Model.Count claims</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Claim ID</th>
+                                        <th>Lecturer</th>
+                                        <th>Period</th>
+                                        <th>Hours</th>
+                                        <th>Amount</th>
+                                        <th>Submitted</th>
+                                        <th>Days Pending</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model)
+                                    {
+                                        var daysPending = (DateTime.Now - claim.SubmittedDate).Days;
+                                        <tr>
+                                            <td><strong>#@claim.ClaimId</strong></td>
+                                            <td>@claim.UserName</td>
+                                            <td>@claim.Month @claim.Year</td>
+                                            <td>@claim.TotalHours.ToString("F1")</td>
+                                            <td><strong>R @claim.TotalAmount.ToString("F2")</strong></td>
+                                            <td>@claim.SubmittedDate.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                @if (daysPending > 3)
+                                                {
+                                                    <span class="badge bg-danger">@daysPending days</span>
+                                                }
+                                                else if (daysPending > 1)
+                                                {
+                                                    <span class="badge bg-warning">@daysPending days</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Today</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="/Coordinator/ClaimReview/@claim.ClaimId" class="btn btn-outline-emerald">
+                                                        <i class="fas fa-search me-1"></i>Review
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h4 class="text-success">All Caught Up!</h4>
+                            <p class="text-muted mb-4">There are no pending claims to review.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

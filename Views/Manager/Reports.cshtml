@@ -1,0 +1,196 @@
+﻿@{
+ViewData["Title"] = "Reports & Analytics";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0"><i class="fas fa-chart-bar me-2 text-emerald"></i>Reports & Analytics</h1>
+                <div>
+                    <button class="btn btn-outline-emerald me-2">
+                        <i class="fas fa-download me-2"></i>Export Report
+                    </button>
+                    <a href="/Manager/Dashboard" class="btn btn-outline-emerald">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted">Comprehensive analytics and reporting dashboard</p>
+        </div>
+    </div>
+
+    <!-- Report Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select">
+                                <option>Last 30 days</option>
+                                <option>Last 3 months</option>
+                                <option>Last 6 months</option>
+                                <option>Year to date</option>
+                                <option>Custom range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Programme</label>
+                            <select class="form-select">
+                                <option>All Programmes</option>
+                                <option>Computer Science</option>
+                                <option>Information Technology</option>
+                                <option>Software Engineering</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select">
+                                <option>All Statuses</option>
+                                <option>Approved</option>
+                                <option>Pending</option>
+                                <option>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-emerald w-100">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-emerald">R 245,680</h2>
+                    <p class="text-muted mb-0">Total Claims Value</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-success">156</h2>
+                    <p class="text-muted mb-0">Approved Claims</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-warning">23</h2>
+                    <p class="text-muted mb-0">Pending Review</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="text-danger">8</h2>
+                    <p class="text-muted mb-0">Rejected Claims</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Charts -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Claims Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="claimsTrendChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Claims by Programme</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="programmeDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Reports -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Quick Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>Monthly Claims Report
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-users me-2"></i>Lecturer Performance
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-clock me-2"></i>Processing Time Analysis
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-chart-bar me-2"></i>Budget Utilization
+                        </a>
+                        <a href="#" class="btn btn-outline-emerald text-start">
+                            <i class="fas fa-shield-alt me-2"></i>Audit Trail Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Lecturers -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Lecturers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Dr. John Smith</h6>
+                                <small class="text-muted">PROG2B, ITEC301</small>
+                            </div>
+                            <span class="badge bg-emerald">R 45,200</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Prof. Emily Wilson</h6>
+                                <small class="text-muted">DBMS401, WEB301</small>
+                            </div>
+                            <span class="badge bg-emerald">R 38,750</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Dr. Michael Brown</h6>
+                                <small class="text-muted">NETW302, SEC401</small>
+                            </div>
+                            <span class="badge bg-emerald">R 32,180</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/dashboard-charts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeManagerCharts();
+        });
+    </script>
+}

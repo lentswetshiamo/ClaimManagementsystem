@@ -1,0 +1,87 @@
+﻿@model ClaimManagementsystem.Models.LoginModel
+
+@{
+    ViewData["Title"] = "Login - CMCS";
+}
+
+<div class="login-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-5">
+            <div class="card login-card">
+                <div class="card-header login-header">
+                    <h2 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>CMCS</h2>
+                    <p class="mb-0 mt-2 opacity-75">Contract Monthly Claim System</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-emerald-lightest">
+                                    <i class="fas fa-envelope text-emerald"></i>
+                                </span>
+                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-emerald-lightest">
+                                    <i class="fas fa-lock text-emerald"></i>
+                                </span>
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-emerald w-100 py-2 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+
+                        <div class="text-center">
+                            <a href="#" class="text-emerald text-decoration-none">Forgot your password?</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Demo Accounts -->
+            <div class="card mt-4">
+                <div class="card-header bg-emerald-lightest">
+                    <h6 class="mb-0 text-emerald"><i class="fas fa-info-circle me-2"></i>Demo Accounts</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <small class="text-muted">Lecturer:</small><br>
+                            <strong>lecturer@university.ac.za</strong> / password
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">Coordinator:</small><br>
+                            <strong>coordinator@university.ac.za</strong> / password
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">Manager:</small><br>
+                            <strong>manager@university.ac.za</strong> / password
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+    }
+}

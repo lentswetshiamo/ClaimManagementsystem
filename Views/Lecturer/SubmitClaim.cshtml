@@ -1,0 +1,195 @@
+﻿@model ClaimManagementsystem.Models.ClaimSubmissionModel
+
+@{
+    ViewData["Title"] = "Submit Claim";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0"><i class="fas fa-plus-circle me-2 text-emerald"></i>Submit Monthly Claim</h1>
+                <a href="/Lecturer/Dashboard" class="btn btn-outline-emerald">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            <p class="text-muted">Submit your monthly teaching claim with detailed hours and supporting documents</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Claim Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="claimForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Month" class="form-label">Month</label>
+                                <select asp-for="Month" class="form-select" required>
+                                    <option value="">Select Month</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                                <span asp-validation-for="Month" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Year" class="form-label">Year</label>
+                                <input asp-for="Year" type="number" class="form-control" min="2024" max="2030" value="@DateTime.Now.Year" required />
+                                <span asp-validation-for="Year" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="TotalHours" class="form-label">Total Hours</label>
+                                <div class="input-group">
+                                    <input asp-for="TotalHours" type="number" class="form-control" step="0.5" min="1" max="160" required />
+                                    <span class="input-group-text">hours</span>
+                                </div>
+                                <span asp-validation-for="TotalHours" class="text-danger small"></span>
+                                <div class="form-text">Maximum 160 hours per month allowed</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="HourlyRate" class="form-label">Hourly Rate</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R</span>
+                                    <input asp-for="HourlyRate" type="number" class="form-control" step="0.01" min="100" max="500" required />
+                                </div>
+                                <span asp-validation-for="HourlyRate" class="text-danger small"></span>
+                                <div class="form-text">Standard rate: R350.00 per hour</div>
+                            </div>
+                        </div>
+
+                        <!-- Claim Items Section -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Claim Items Breakdown</h6>
+                                <button type="button" class="btn btn-sm btn-outline-emerald" id="addItem">
+                                    <i class="fas fa-plus me-1"></i>Add Item
+                                </button>
+                            </div>
+
+                            <div id="claimItems">
+                                <!-- Dynamic items will be added here -->
+                                <div class="claim-item card mb-2">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <input type="text" class="form-control" placeholder="Module/Description" name="ClaimItems[0].Module" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="number" class="form-control" placeholder="Hours" name="ClaimItems[0].HoursWorked" step="0.5" min="0.5" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="number" class="form-control" placeholder="Rate" name="ClaimItems[0].Rate" step="0.01" required>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <button type="button" class="btn btn-sm btn-outline-danger remove-item" disabled>
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="card bg-emerald-lightest mb-4">
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted">Total Hours</h6>
+                                        <h4 id="summaryHours">0</h4>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted">Hourly Rate</h6>
+                                        <h4 id="summaryRate">R 0.00</h4>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="text-muted">Total Amount</h6>
+                                        <h4 id="summaryTotal" class="text-emerald">R 0.00</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Upload -->
+                        <div class="mb-4">
+                            <h6 class="mb-3"><i class="fas fa-paperclip me-2"></i>Supporting Documents</h6>
+                            <div class="border rounded p-3 bg-light">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="documentUpload" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    <div class="form-text">Maximum file size: 10MB per file. Supported formats: PDF, DOC, DOCX, JPG, PNG</div>
+                                </div>
+                                <div id="uploadedFiles" class="mt-2">
+                                    <!-- Uploaded files will appear here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-outline-secondary me-md-2" id="saveDraft">
+                                <i class="fas fa-save me-2"></i>Save Draft
+                            </button>
+                            <button type="submit" class="btn btn-emerald">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Claim
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Validation Rules -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Submission Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Submit by 5th of following month</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Maximum 160 hours per month</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Include all supporting documents</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Ensure hourly rate matches contract</li>
+                        <li class="mb-0"><i class="fas fa-check-circle text-success me-2"></i>Double-check calculations</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Help -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small mb-2">For assistance with claim submission:</p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-envelope me-2"></i>support@university.ac.za</li>
+                        <li><i class="fas fa-phone me-2"></i>+27 11 123 4567</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/claim-validation.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}
