@@ -1,0 +1,375 @@
+/* Claims Management System - Enhanced Styles */
+
+/* Status badges */
+.status-badge {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.25rem;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.status-verified {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.status-approved {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.status-rejected {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* Claim cards */
+.claim-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.claim-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.claim-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.claim-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+.claim-card-body {
+    margin-bottom: 1rem;
+}
+
+.claim-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Form styling */
+.form-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+/* Total amount display */
+.total-amount-display {
+    background-color: #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.total-amount-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.total-amount-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #28a745;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Bulk actions */
+.bulk-actions-bar {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bulk-actions-info {
+    font-weight: 600;
+    color: #495057;
+}
+
+.bulk-actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* DataTables customization */
+.dataTables_wrapper {
+    padding: 1rem;
+}
+
+.dataTables_filter input {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.dataTables_length select {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    margin: 0 0.5rem;
+}
+
+/* Notification badges */
+.notification-badge {
+    position: relative;
+    top: -10px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.dashboard-card-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.dashboard-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.dashboard-card-label {
+    font-size: 1rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Statistics */
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card.success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.stat-card.warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+}
+
+.stat-card.danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.stat-card.info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+/* Tooltips */
+.tooltip-icon {
+    cursor: help;
+    color: #6c757d;
+    margin-left: 0.25rem;
+}
+
+/* Responsive tables */
+.table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.table-responsive table {
+    margin-bottom: 0;
+}
+
+/* File upload */
+.file-upload-wrapper {
+    border: 2px dashed #ced4da;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-wrapper:hover {
+    border-color: #007bff;
+    background-color: #e7f3ff;
+}
+
+.file-upload-icon {
+    font-size: 3rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.file-upload-text {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+
+.loading-spinner.active {
+    display: block;
+}
+
+/* Validation errors */
+.validation-error {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+/* Alert enhancements */
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.alert-dismissible .btn-close {
+    padding: 0.75rem 1rem;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 1rem;
+}
+
+.page-link {
+    border-radius: 0.25rem;
+    margin: 0 0.125rem;
+}
+
+/* Search and filter */
+.search-filter-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.search-filter-section .form-control {
+    border-radius: 0.25rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .claim-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .claim-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .action-buttons {
+        width: 100%;
+    }
+
+    .action-buttons .btn {
+        flex: 1;
+        margin-right: 0;
+    }
+
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .bulk-actions-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .bulk-actions-buttons .btn {
+        width: 100%;
+    }
+}

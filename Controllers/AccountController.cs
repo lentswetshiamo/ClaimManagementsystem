@@ -1,24 +1,53 @@
 ﻿using ClaimManagementsystem.Models;
+using ClaimManagementsystem.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClaimManagementsystem.Controllers
 {
     public class AccountController : Controller
     {
-        public static List<User> users = new List<User>();
+        private readonly AuthService _authService;
+
+        public AccountController(AuthService authService)
+        {
+            _authService = authService;
+        }
+
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
+
         [HttpPost]
-        public IActionResult Register(User user)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(User user)
         {
-            user.Id = users.Count + 1;
-            users.Add(user);
-            TempData["Success"] = "Registration successful. Please log in.";
-            return RedirectToAction("Login");
+            if (!ModelState.IsValid)
+            {
+                return View(user);
+            }
+
+            // Check if user already exists
+            if (await _authService.UserExistsAsync(user.Email))
+            {
+                ModelState.AddModelError("Email", "A user with this email already exists.");
+                return View(user);
+            }
+
+            try
+            {
+                await _authService.RegisterUserAsync(user);
+                TempData["Success"] = "Registration successful. Please log in.";
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"An error occurred during registration: {ex.Message}");
+                return View(user);
+            }
         }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -26,34 +55,39 @@ namespace ClaimManagementsystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(string email, string password)
         {
-            // Corrected the variable name to reference the 'users' list
-            var user = users.Find(u => u.Email == email && u.Password == password);
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                ModelState.AddModelError("", "Email and password are required.");
+                return View();
+            }
+
+            var user = await _authService.ValidateUserAsync(email, password);
+            
             if (user != null)
             {
-                TempData["UserName"] = user.Name;
-                TempData["UserRole"] = user.Role;
+                // Store user information in session
+                HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("UserName", user.Name);
+                HttpContext.Session.SetString("UserRole", user.Role);
+                HttpContext.Session.SetString("UserEmail", user.Email);
+
+                TempData["Success"] = $"Welcome back, {user.Name}!";
                 return RedirectToAction("Index", "Dashboard");
             }
 
-            // If user is not found, still allow login with dummy redirect
-            TempData["UserName"] = "Demo User";
-            TempData["UserRole"] = "Lecturer";
-            return RedirectToAction("Index", "Dashboard");
+            ModelState.AddModelError("", "Invalid email or password.");
+            return View();
         }
+
         [HttpGet]
         public IActionResult Logout()
         {
-            TempData["UserName"] = null;
-            TempData["UserRole"] = null;
-            TempData.Remove("UserName");
-            TempData.Remove("UserRole");
-            TempData.Clear();
-
+            HttpContext.Session.Clear();
+            TempData["Success"] = "You have been logged out successfully.";
             return RedirectToAction("Login");
-
         }
     }
 }
-

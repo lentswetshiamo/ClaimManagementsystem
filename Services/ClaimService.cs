@@ -68,6 +68,11 @@ namespace ClaimManagementsystem.Services
             return await _claimRepository.GetClaimsByLecturerAsync(lecturerId);
         }
 
+        public async Task<IEnumerable<Claim>> GetClaimsByUserAsync(int userId)
+        {
+            return await _claimRepository.GetClaimsByUserAsync(userId);
+        }
+
         public async Task ApproveClaimAsync(int claimId, string approverName)
         {
             var claim = await _claimRepository.GetClaimByIdAsync(claimId);
