@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Statistics";
+    var totalClaims = ViewBag.TotalClaims ?? 0;
+    var approvedClaims = ViewBag.ApprovedClaims ?? 0;
+    var pendingClaims = ViewBag.PendingClaims ?? 0;
+    var rejectedClaims = ViewBag.RejectedClaims ?? 0;
+    var verifiedClaims = ViewBag.VerifiedClaims ?? 0;
+    var totalAmount = ViewBag.TotalAmount ?? 0;
+}
+
+<link rel="stylesheet" href="~/css/claims.css" />
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-chart-bar"></i> System Statistics</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Overall Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="mb-3">Overall Claims Statistics</h4>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card primary">
+                                <div class="text-center">
+                                    <i class="fas fa-file-alt fa-3x mb-2 opacity-50"></i>
+                                    <div class="stat-card-value">@totalClaims</div>
+                                    <div>Total Claims</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card success">
+                                <div class="text-center">
+                                    <i class="fas fa-check-circle fa-3x mb-2 opacity-50"></i>
+                                    <div class="stat-card-value">@approvedClaims</div>
+                                    <div>Approved Claims</div>
+                                    <small>(@(totalClaims > 0 ? ((double)approvedClaims / totalClaims * 100).ToString("N1") : "0")%)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="stat-card info">
+                                <div class="text-center">
+                                    <i class="fas fa-money-bill-wave fa-3x mb-2 opacity-50"></i>
+                                    <div class="stat-card-value">R @totalAmount.ToString("N2")</div>
+                                    <div>Total Approved Amount</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Claims by Status -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="mb-3">Claims Breakdown by Status</h4>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="claim-card">
+                                <div class="text-center">
+                                    <span class="status-badge status-pending mb-2">Pending</span>
+                                    <div class="stat-card-value text-warning">@pendingClaims</div>
+                                    <div class="text-muted">Awaiting Review</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="claim-card">
+                                <div class="text-center">
+                                    <span class="status-badge status-verified mb-2">Verified</span>
+                                    <div class="stat-card-value text-info">@verifiedClaims</div>
+                                    <div class="text-muted">Awaiting Approval</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="claim-card">
+                                <div class="text-center">
+                                    <span class="status-badge status-approved mb-2">Approved</span>
+                                    <div class="stat-card-value text-success">@approvedClaims</div>
+                                    <div class="text-muted">Completed</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="claim-card">
+                                <div class="text-center">
+                                    <span class="status-badge status-rejected mb-2">Rejected</span>
+                                    <div class="stat-card-value text-danger">@rejectedClaims</div>
+                                    <div class="text-muted">Not Approved</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Visualization -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4 class="mb-3">Status Distribution</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <canvas id="statusChart" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to HR Dashboard
+                                </a>
+                                <a asp-action="MonthlyReport" class="btn btn-primary">
+                                    <i class="fas fa-file-invoice"></i> View Monthly Report
+                                </a>
+                                <a asp-action="ExportCsv" class="btn btn-success">
+                                    <i class="fas fa-download"></i> Export Data
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Status Chart
+            var ctx = document.getElementById('statusChart').getContext('2d');
+            var statusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pending', 'Verified', 'Approved', 'Rejected'],
+                    datasets: [{
+                        label: 'Number of Claims',
+                        data: [@pendingClaims, @verifiedClaims, @approvedClaims, @rejectedClaims],
+                        backgroundColor: [
+                            'rgba(255, 193, 7, 0.6)',
+                            'rgba(23, 162, 184, 0.6)',
+                            'rgba(40, 167, 69, 0.6)',
+                            'rgba(220, 53, 69, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 193, 7)',
+                            'rgb(23, 162, 184)',
+                            'rgb(40, 167, 69)',
+                            'rgb(220, 53, 69)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Claims Distribution by Status'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

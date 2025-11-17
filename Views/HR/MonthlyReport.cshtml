@@ -1,0 +1,166 @@
+@model IEnumerable<ClaimManagementsystem.Models.Claim>
+
+@{
+    ViewData["Title"] = "Monthly Report";
+    var year = ViewBag.SelectedYear ?? DateTime.Now.Year;
+    var month = ViewBag.SelectedMonth ?? DateTime.Now.Month;
+    var monthName = new DateTime(year, month, 1).ToString("MMMM yyyy");
+}
+
+<link rel="stylesheet" href="~/css/claims.css" />
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Monthly Claims Report - @monthName</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Date Filter -->
+                    <div class="search-filter-section mb-4">
+                        <form method="get" asp-action="MonthlyReport" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="year" class="form-label">Year</label>
+                                <select name="year" id="year" class="form-select">
+                                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 5; y--)
+                                    {
+                                        <option value="@y" selected="@(y == year)">@y</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="month" class="form-label">Month</label>
+                                <select name="month" id="month" class="form-select">
+                                    @for (int m = 1; m <= 12; m++)
+                                    {
+                                        var monthDate = new DateTime(2000, m, 1);
+                                        <option value="@m" selected="@(m == month)">@monthDate.ToString("MMMM")</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <a asp-action="ExportCsv" asp-route-year="@year" asp-route-month="@month" class="btn btn-success">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Summary Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="stat-card primary">
+                                <div class="text-center">
+                                    <div class="stat-card-value">@Model.Count()</div>
+                                    <div>Total Claims</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card success">
+                                <div class="text-center">
+                                    <div class="stat-card-value">R @Model.Sum(c => c.TotalAmount).ToString("N2")</div>
+                                    <div>Total Amount</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card info">
+                                <div class="text-center">
+                                    <div class="stat-card-value">@Model.Sum(c => c.HoursWorked).ToString("N0")</div>
+                                    <div>Total Hours</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card warning">
+                                <div class="text-center">
+                                    <div class="stat-card-value">@(Model.Any() ? Model.Average(c => c.HourlyRate).ToString("N2") : "0.00")</div>
+                                    <div>Avg. Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Claims Table -->
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="monthlyReportTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Claim ID</th>
+                                        <th>Claim Type</th>
+                                        <th>Lecturer Name</th>
+                                        <th>Hours Worked</th>
+                                        <th>Hourly Rate</th>
+                                        <th>Total Amount</th>
+                                        <th>Date Submitted</th>
+                                        <th>Approved By</th>
+                                        <th>Approved Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.OrderByDescending(c => c.DateSubmitted))
+                                    {
+                                        <tr>
+                                            <td>@claim.Id</td>
+                                            <td>@claim.ClaimType</td>
+                                            <td>@claim.LecturerName</td>
+                                            <td>@claim.HoursWorked</td>
+                                            <td>R @claim.HourlyRate.ToString("N2")</td>
+                                            <td><strong>R @claim.TotalAmount.ToString("N2")</strong></td>
+                                            <td>@claim.DateSubmitted.ToString("yyyy-MM-dd")</td>
+                                            <td>@claim.ApprovedBy</td>
+                                            <td>@claim.ApprovedDate?.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-info">
+                                        <th colspan="3">TOTALS:</th>
+                                        <th>@Model.Sum(c => c.HoursWorked)</th>
+                                        <th></th>
+                                        <th><strong>R @Model.Sum(c => c.TotalAmount).ToString("N2")</strong></th>
+                                        <th colspan="3"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> No approved claims found for @monthName.
+                        </div>
+                    }
+
+                    <div class="mt-3">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to HR Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#monthlyReportTable').DataTable({
+                order: [[0, 'desc']],
+                pageLength: 25
+            });
+        });
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+}
