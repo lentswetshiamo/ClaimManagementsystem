@@ -1,0 +1,150 @@
+@model IEnumerable<ClaimManagementsystem.Models.Claim>
+
+@{
+    ViewData["Title"] = "HR Dashboard";
+}
+
+<link rel="stylesheet" href="~/css/claims.css" />
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4"><i class="fas fa-building"></i> HR Dashboard</h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-card-value">@Model.Count()</div>
+                        <div>Approved Claims</div>
+                    </div>
+                    <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-card-value">R @Model.Sum(c => c.TotalAmount).ToString("N2")</div>
+                        <div>Total Amount</div>
+                    </div>
+                    <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-card-value">@Model.Sum(c => c.HoursWorked).ToString("N0")</div>
+                        <div>Total Hours</div>
+                    </div>
+                    <i class="fas fa-clock fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-card-value">@Model.Select(c => c.LecturerName).Distinct().Count()</div>
+                        <div>Lecturers</div>
+                    </div>
+                    <i class="fas fa-users fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a asp-action="MonthlyReport" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-invoice"></i> Monthly Report
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a asp-action="ExportCsv" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a asp-action="Statistics" class="btn btn-outline-info w-100">
+                                <i class="fas fa-chart-bar"></i> Statistics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Approved Claims -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-double"></i> Recent Approved Claims</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Claim ID</th>
+                                        <th>Lecturer</th>
+                                        <th>Claim Type</th>
+                                        <th>Hours</th>
+                                        <th>Rate</th>
+                                        <th>Total</th>
+                                        <th>Approved Date</th>
+                                        <th>Approved By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.OrderByDescending(c => c.ApprovedDate).Take(10))
+                                    {
+                                        <tr>
+                                            <td>@claim.Id</td>
+                                            <td>@claim.LecturerName</td>
+                                            <td>@claim.ClaimType</td>
+                                            <td>@claim.HoursWorked</td>
+                                            <td>R @claim.HourlyRate.ToString("N2")</td>
+                                            <td><strong>R @claim.TotalAmount.ToString("N2")</strong></td>
+                                            <td>@claim.ApprovedDate?.ToString("yyyy-MM-dd")</td>
+                                            <td>@claim.ApprovedBy</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle"></i> No approved claims found.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+}
