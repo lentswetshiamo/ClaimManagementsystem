@@ -1,39 +1,166 @@
-﻿@model List<ClaimManagementsystem.Models.Claim>
+﻿@model IEnumerable<ClaimManagementsystem.Models.Claim>
+
 @{
-    ViewBag.Title = "View Claims";
-  
+    ViewData["Title"] = "View Claims";
+    var userRole = Context.Session.GetString("UserRole") ?? "Lecturer";
 }
-<div class="container mt-5 d-flex justify-content-center">
-    <div class="card p-4 shadow" style="width:600px;">
-        <h2 class="text-center mb-4">View All Claims</h2>
-        <table class="table-bordered mt-4">
-            <thead class="table-dark">
-                <tr>
-                    <th>Claim ID</th>
-                    <th>Description</th>
-                    <th>Lecturer Name</th>
-                    <th>Status</th>
-                    <th>Date Submitted</th>
-                    <th>Document</th>
-                    <th>Submitted By (User ID)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var claim in Model)
-                {
-                    <tr>
-                        <td>@claim.Id</td>
-                        <td>@claim.Description</td>
-                        <td>@claim.LecturerName</td>
-                        <td>@claim.Status</td>
-                        <td>@claim.DateSubmitted.ToShortDateString()</td>
-                        <td>@claim.Documents</td>
-                        <td>@claim.UserId</td>
-                    </tr>
-                }
-            </tbody>
 
+<link rel="stylesheet" href="~/css/claims.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css" />
 
-        </table>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-list"></i> All Claims</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (userRole == "Programme Coordinator" || userRole == "Academic Manager")
+                    {
+                        <div class="bulk-actions-bar">
+                            <div class="bulk-actions-info">
+                                <span id="selectedCount">0</span> claim(s) selected
+                            </div>
+                            <div class="bulk-actions-buttons">
+                                <button type="button" class="btn btn-success" id="bulkApproveBtn" disabled>
+                                    <i class="fas fa-check"></i> Approve Selected
+                                </button>
+                                <button type="button" class="btn btn-danger" id="bulkRejectBtn" disabled>
+                                    <i class="fas fa-times"></i> Reject Selected
+                                </button>
+                            </div>
+                        </div>
+
+                        <form asp-action="BulkApprove" method="post" id="bulkApproveForm" style="display: none;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="claimIds" id="bulkClaimIds" />
+                        </form>
+
+                        <form asp-action="BulkReject" method="post" id="bulkRejectForm" style="display: none;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="claimIds" />
+                            <input type="hidden" name="rejectionReason" id="bulkRejectionReason" />
+                        </form>
+                    }
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped" id="claimsTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    @if (userRole == "Programme Coordinator" || userRole == "Academic Manager")
+                                    {
+                                        <th>
+                                            <input type="checkbox" id="selectAll" />
+                                        </th>
+                                    }
+                                    <th>ID</th>
+                                    <th>Claim Type</th>
+                                    <th>Lecturer</th>
+                                    <th>Hours</th>
+                                    <th>Rate</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var claim in Model)
+                                {
+                                    <tr>
+                                        @if (userRole == "Programme Coordinator" || userRole == "Academic Manager")
+                                        {
+                                            <td>
+                                                @if (claim.Status == "Pending" || claim.Status == "Verified")
+                                                {
+                                                    <input type="checkbox" class="claim-checkbox" value="@claim.Id" />
+                                                }
+                                            </td>
+                                        }
+                                        <td>@claim.Id</td>
+                                        <td>@claim.ClaimType</td>
+                                        <td>@claim.LecturerName</td>
+                                        <td>@claim.HoursWorked</td>
+                                        <td>R @claim.HourlyRate.ToString("N2")</td>
+                                        <td><strong>R @claim.TotalAmount.ToString("N2")</strong></td>
+                                        <td>
+                                            @if (claim.Status == "Pending")
+                                            {
+                                                <span class="status-badge status-pending">Pending</span>
+                                            }
+                                            else if (claim.Status == "Verified")
+                                            {
+                                                <span class="status-badge status-verified">Verified</span>
+                                            }
+                                            else if (claim.Status == "Approved")
+                                            {
+                                                <span class="status-badge status-approved">Approved</span>
+                                            }
+                                            else if (claim.Status == "Rejected")
+                                            {
+                                                <span class="status-badge status-rejected">Rejected</span>
+                                            }
+                                        </td>
+                                        <td>@claim.DateSubmitted.ToString("yyyy-MM-dd")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                @if (userRole == "Programme Coordinator" || userRole == "Academic Manager")
+                                                {
+                                                    @if (claim.Status == "Pending")
+                                                    {
+                                                        <a asp-action="VerifyClaims" asp-route-id="@claim.Id" class="btn btn-sm btn-info" title="Verify">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </a>
+                                                    }
+                                                    @if (claim.Status == "Verified" || claim.Status == "Pending")
+                                                    {
+                                                        <a asp-action="ApproveClaim" asp-route-id="@claim.Id" class="btn btn-sm btn-success" title="Approve">
+                                                            <i class="fas fa-thumbs-up"></i>
+                                                        </a>
+                                                        <a asp-action="RejectClaim" asp-route-id="@claim.Id" class="btn btn-sm btn-danger" title="Reject">
+                                                            <i class="fas fa-thumbs-down"></i>
+                                                        </a>
+                                                    }
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+    <script src="~/js/claim.js"></script>
+}

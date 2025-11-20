@@ -1,368 +1,333 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ClaimManagementsystem.Models;
+using ClaimManagementsystem.Services;
 using ClaimManagementsystem.Data;
-using ClaimManagementsystem.Data.Repository;
-using ClaimManagementsystem.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClaimManagementsystem.Controllers
 {
     public class ClaimController : Controller
     {
-        private readonly IClaimRepository _claimRepository;
-        private readonly DatabaseContext _db;
+        private readonly ClaimService _claimService;
+        private readonly DocumentService _documentService;
+        private readonly DatabaseContext _context;
 
-        private const long MaxFileBytes = 5 * 1024 * 1024; // 5 MB
-        private static readonly string[] AllowedExtensions = new[] { ".pdf", ".docx", ".xlsx", ".png", ".jpg", ".jpeg" };
-
-        public ClaimController(IClaimRepository claimRepository, DatabaseContext db)
+        public ClaimController(ClaimService claimService, DocumentService documentService, DatabaseContext context)
         {
-            _claimRepository = claimRepository ?? throw new ArgumentNullException(nameof(claimRepository));
-            _db = db ?? throw new ArgumentNullException(nameof(db));
+            _claimService = claimService;
+            _documentService = documentService;
+            _context = context;
+        }
+
+        // Helper method to get current user info from session
+        private (int userId, string userName, string userRole) GetCurrentUser()
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            var userName = HttpContext.Session.GetString("UserName") ?? "Guest";
+            var userRole = HttpContext.Session.GetString("UserRole") ?? "Lecturer";
+
+            int.TryParse(userIdStr, out int userId);
+            return (userId, userName, userRole);
         }
 
         [HttpGet]
-        public IActionResult Submit()
+        public async Task<IActionResult> Submit()
         {
-            TempData.Keep("UserName");
-            TempData.Keep("UserRole");
+            var lecturers = await Task.FromResult(_context.Lecturers.ToList());
+            ViewBag.Lecturers = lecturers;
             return View();
         }
 
-        // Lecturers submit a claim. Supports optional single file upload at submission time.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Submit(Claim claim, IFormFile upload = null)
+        public async Task<IActionResult> Submit(Claim claim)
         {
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (!ModelState.IsValid)
+            {
+                var lecturers = await Task.FromResult(_context.Lecturers.ToList());
+                ViewBag.Lecturers = lecturers;
+                return View(claim);
+            }
+
             try
             {
-                if (claim == null)
+                // Validate claim
+                if (!_claimService.ValidateClaim(claim, out var errors))
                 {
-                    TempData["Error"] = "Invalid claim data.";
-                    return RedirectToAction("Submit");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    TempData["Error"] = "Please correct the highlighted errors and try again.";
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("", error);
+                    }
+                    var lecturers = await Task.FromResult(_context.Lecturers.ToList());
+                    ViewBag.Lecturers = lecturers;
                     return View(claim);
                 }
 
-                claim.TotalAmount = claim.TotalHours * claim.HourlyRate;
-                claim.SubmittedDate = DateTime.UtcNow;
-                claim.Status = "Pending";
-                if (string.IsNullOrWhiteSpace(claim.UserName))
-                {
-                    claim.UserName = TempData["UserName"]?.ToString() ?? claim.UserName;
-                }
+                // Set user information
+                claim.UserId = userId;
+                claim.SubmittedBy = userName;
 
-                // persist claim first so we have an id for files
-                var added = await _claimRepository.AddAsync(claim as Claim);
-
-                // handle optional upload   
-                if (upload != null && upload.Length > 0)
+                // Get lecturer name if LecturerId is provided
+                if (claim.LecturerId > 0)
                 {
-                    var saveResult = await SaveFileForClaimAsync(added.ClaimId, upload, UserIdFromTempData());
-                    if (!saveResult.success)
+                    var lecturer = await _context.Lecturers.FindAsync(claim.LecturerId);
+                    if (lecturer != null)
                     {
-                        TempData["Error"] = saveResult.errorMessage;
-                        TempData.Keep("UserName");
-                        TempData.Keep("UserRole");
-                        return RedirectToAction("Submit");
+                        claim.LecturerName = lecturer.LecturerName;
                     }
                 }
 
-                TempData["Message"] = "Claim submitted successfully.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
+                // Create claim (auto-calculates total, creates audit, workflow, notification)
+                await _claimService.CreateClaimAsync(claim, userName);
+
+                TempData["Success"] = "Claim submitted successfully!";
                 return RedirectToAction("Index", "Dashboard");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred while submitting the claim: " + ex.Message;
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
+                ModelState.AddModelError("", $"An error occurred: {ex.Message}");
+                var lecturers = await Task.FromResult(_context.Lecturers.ToList());
+                ViewBag.Lecturers = lecturers;
                 return View(claim);
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> UploadDocuments(int id)
+        public IActionResult UploadDocuments()
         {
-            var claim = await _claimRepository.GetByIdAsync(id);
-            if (claim == null)
-            {
-                TempData["Error"] = "Claim not found.";
-                return RedirectToAction("Index", "Dashboard");
-            }
-
-            var files = await _db.Documents.Where(d => d.ClaimId == id).Select(d => d.FileName).ToListAsync();
-            ViewBag.Claim = claim;
-            ViewBag.UploadedFiles = files;
-            TempData.Keep("UserName");
-            TempData.Keep("UserRole");
             return View();
         }
 
-        // Upload document(s) for an existing claim
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadDocuments(int id, IFormFile file, string description = null)
+        public async Task<IActionResult> UploadDocuments(int id, IFormFile document)
         {
+            if (document == null || document.Length == 0)
+            {
+                TempData["Error"] = "Please select a file to upload.";
+                return View();
+            }
+
             try
             {
-                var claim = await _claimRepository.GetByIdAsync(id);
+                var claim = await _claimService.GetClaimByIdAsync(id);
                 if (claim == null)
                 {
                     TempData["Error"] = "Claim not found.";
-                    return RedirectToAction("Index", "Dashboard");
+                    return NotFound();
                 }
 
-                if (file == null || file.Length == 0)
-                {
-                    TempData["Error"] = "No file selected.";
-                    return RedirectToAction(nameof(UploadDocuments), new { id });
-                }
+                var documentPath = await _documentService.UploadDocumentAsync(document, id);
+                claim.Documents = documentPath;
 
-                var saveResult = await SaveFileForClaimAsync(id, file, UserIdFromTempData(), description);
-                if (!saveResult.success)
-                {
-                    TempData["Error"] = saveResult.errorMessage;
-                    TempData.Keep("UserName");
-                    TempData.Keep("UserRole");
-                    return RedirectToAction(nameof(UploadDocuments), new { id });
-                }
+                // Update claim with document path
+                await _context.SaveChangesAsync();
 
-                TempData["Message"] = "Document uploaded successfully.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
+                TempData["Success"] = "Document uploaded successfully.";
                 return RedirectToAction("Index", "Dashboard");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred while uploading the document: " + ex.Message;
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return RedirectToAction(nameof(UploadDocuments), new { id });
+                TempData["Error"] = $"Error uploading document: {ex.Message}";
+                return View();
             }
         }
 
-        // Tracking for lecturers: show claims for current lecturer
         [HttpGet]
         public async Task<IActionResult> TrackStatus()
         {
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            IEnumerable<Claim> claims;
+
+            if (userRole == "Lecturer")
+            {
+                // Show lecturer's own claims
+                claims = await _claimService.GetClaimsByUserAsync(userId);
+            }
+            else
+            {
+                // Show all claims for coordinators and managers
+                claims = await _claimService.GetAllClaimsAsync();
+            }
+
+            return View(claims);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VerifyClaims(int id)
+        {
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (userRole != "Programme Coordinator" && userRole != "Academic Manager")
+            {
+                TempData["Error"] = "You do not have permission to verify claims.";
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             try
             {
-                var lecturerName = TempData["UserName"]?.ToString();
-                if (string.IsNullOrEmpty(lecturerName))
-                {
-                    TempData["Error"] = "User not identified. Please log in.";
-                    return RedirectToAction("Index", "Dashboard");
-                }
-
-                var lecturerClaims = await _db.Claims
-                    .Where(c => c.UserName == lecturerName)
-                    .OrderByDescending(c => c.SubmittedDate)
-                    .ToListAsync();
-
-                ViewBag.UploadedFiles = await _db.Documents.GroupBy(d => d.ClaimId).ToDictionaryAsync(g => g.Key, g => g.Select(x => x.FileName).ToList());
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return View(lecturerClaims);
+                await _claimService.VerifyClaimAsync(id, userName);
+                TempData["Success"] = "Claim verified successfully.";
+                return RedirectToAction("ViewClaims");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Unable to load claim status: " + ex.Message;
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return RedirectToAction("Index", "Dashboard");
+                TempData["Error"] = $"Error verifying claim: {ex.Message}";
+                return RedirectToAction("ViewClaims");
             }
         }
 
-        // View that a coordinator/manager uses to review pending claims
         [HttpGet]
-        public async Task<IActionResult> VerifyClaims()
-        {
-            var role = TempData["UserRole"]?.ToString();
-            if (role != "Programme Coordinator" && role != "Academic Manager")
-            {
-                TempData["Error"] = "You do not have permission to verify claims.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return RedirectToAction("Index", "Dashboard");
-            }
-
-            var pendingClaims = await _claimRepository.GetByStatusAsync("Pending");
-            ViewBag.UploadedFiles = await _db.Documents.GroupBy(d => d.ClaimId).ToDictionaryAsync(g => g.Key, g => g.Select(x => x.FileName).ToList());
-            TempData.Keep("UserName");
-            TempData.Keep("UserRole");
-            return View(pendingClaims);
-        }
-
-        // Approve a claim (POST to change state)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveClaim(int id)
         {
-            var role = TempData["UserRole"]?.ToString();
-            if (role != "Programme Coordinator" && role != "Academic Manager")
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (userRole != "Programme Coordinator" && userRole != "Academic Manager")
             {
                 TempData["Error"] = "You do not have permission to approve claims.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
                 return RedirectToAction("Index", "Dashboard");
             }
 
-            var claim = await _claimRepository.GetByIdAsync(id);
-            if (claim != null)
+            try
             {
-                claim.Status = "Approved";
-                claim.ApprovedDate = DateTime.UtcNow;
-                await _claimRepository.UpdateAsync(claim);
-
-                TempData["Message"] = $"Claim {id} approved successfully.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return RedirectToAction(nameof(VerifyClaims));
+                await _claimService.ApproveClaimAsync(id, userName);
+                TempData["Success"] = "Claim approved successfully.";
+                return RedirectToAction("ViewClaims");
             }
-
-            TempData["Error"] = "Claim not found.";
-            TempData.Keep("UserName");
-            TempData.Keep("UserRole");
-            return RedirectToAction(nameof(VerifyClaims));
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error approving claim: {ex.Message}";
+                return RedirectToAction("ViewClaims");
+            }
         }
 
-        // Reject a claim (POST to change state)
+        [HttpGet]
+        public async Task<IActionResult> RejectClaim(int id)
+        {
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (userRole != "Programme Coordinator" && userRole != "Academic Manager")
+            {
+                TempData["Error"] = "You do not have permission to reject claims.";
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            var claim = await _claimService.GetClaimByIdAsync(id);
+            if (claim == null)
+            {
+                return NotFound();
+            }
+
+            return View(claim);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectClaim(int id, string rejectionReason)
         {
-            var role = TempData["UserRole"]?.ToString();
-            if (role != "Programme Coordinator" && role != "Academic Manager")
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (string.IsNullOrWhiteSpace(rejectionReason))
             {
-                TempData["Error"] = "You do not have permission to reject claims.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return RedirectToAction("Index", "Dashboard");
+                TempData["Error"] = "Rejection reason is required.";
+                return RedirectToAction("RejectClaim", new { id });
             }
 
-            var claim = await _claimRepository.GetByIdAsync(id);
-            if (claim != null)
+            try
             {
-                claim.Status = "Rejected";
-                claim.ApprovedDate = DateTime.UtcNow;
-                claim.Comments = string.IsNullOrWhiteSpace(rejectionReason) ? "Rejected by verifier." : rejectionReason;
-                await _claimRepository.UpdateAsync(claim);
-
-                TempData["Message"] = $"Claim {id} rejected.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
-                return RedirectToAction(nameof(VerifyClaims));
+                await _claimService.RejectClaimAsync(id, userName, rejectionReason);
+                TempData["Success"] = "Claim rejected successfully.";
+                return RedirectToAction("ViewClaims");
             }
-
-            TempData["Error"] = "Claim not found.";
-            TempData.Keep("UserName");
-            TempData.Keep("UserRole");
-            return RedirectToAction(nameof(VerifyClaims));
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error rejecting claim: {ex.Message}";
+                return RedirectToAction("ViewClaims");
+            }
         }
 
-        // View all claims (admin/coordinator/manager)
         [HttpGet]
-        public async Task<IActionResult> ViewAllClaims()
+        public async Task<IActionResult> ViewClaims()
         {
-            var role = TempData["UserRole"]?.ToString();
-            if (role != "Programme Coordinator" && role != "Academic Manager" && role != "Admin")
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (userRole != "Programme Coordinator" && userRole != "Academic Manager" && userRole != "HR")
             {
                 TempData["Error"] = "You do not have permission to view all claims.";
-                TempData.Keep("UserName");
-                TempData.Keep("UserRole");
                 return RedirectToAction("Index", "Dashboard");
             }
 
-            var allClaims = await _db.Claims.OrderByDescending(c => c.SubmittedDate).ToListAsync();
-            ViewBag.UploadedFiles = await _db.Documents.GroupBy(d => d.ClaimId).ToDictionaryAsync(g => g.Key, g => g.Select(x => x.FileName).ToList());
-            TempData.Keep("UserName");
-            TempData.Keep("UserRole");
-            return View(allClaims);
+            IEnumerable<Claim> claims;
+
+            if (userRole == "HR")
+            {
+                // HR sees only approved claims
+                claims = await _claimService.GetClaimsByStatusAsync("Approved");
+            }
+            else
+            {
+                // Coordinators and Managers see all claims
+                claims = await _claimService.GetAllClaimsAsync();
+            }
+
+            return View(claims);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkApprove(List<int> claimIds)
+        {
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (userRole != "Programme Coordinator" && userRole != "Academic Manager")
+            {
+                TempData["Error"] = "You do not have permission to approve claims.";
+                return RedirectToAction("ViewClaims");
+            }
+
+            try
+            {
+                await _claimService.BulkApproveClaimsAsync(claimIds, userName);
+                TempData["Success"] = $"{claimIds.Count} claim(s) approved successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error approving claims: {ex.Message}";
+            }
+
+            return RedirectToAction("ViewClaims");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkReject(List<int> claimIds, string rejectionReason)
+        {
+            var (userId, userName, userRole) = GetCurrentUser();
+
+            if (userRole != "Programme Coordinator" && userRole != "Academic Manager")
+            {
+                TempData["Error"] = "You do not have permission to reject claims.";
+                return RedirectToAction("ViewClaims");
+            }
+
+            try
+            {
+                await _claimService.BulkRejectClaimsAsync(claimIds, userName, rejectionReason);
+                TempData["Success"] = $"{claimIds.Count} claim(s) rejected successfully.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error rejecting claims: {ex.Message}";
+            }
+
+            return RedirectToAction("ViewClaims");
         }
 
         public IActionResult Index()
         {
             return View();
-        }
-
-        // Helper: save uploaded file to disk and create Document record
-        private async Task<(bool success, string errorMessage)> SaveFileForClaimAsync(int claimId, IFormFile file, int uploadedBy, string description = null)
-        {
-            if (file == null || file.Length == 0)
-            {
-                return (false, "File is empty.");
-            }
-
-            if (file.Length > MaxFileBytes)
-            {
-                return (false, $"File exceeds maximum allowed size of {MaxFileBytes / (1024 * 1024)} MB.");
-            }
-
-            var ext = Path.GetExtension(file.FileName);
-            if (string.IsNullOrEmpty(ext) || !AllowedExtensions.Contains(ext.ToLowerInvariant()))
-            {
-                return (false, "File type is not allowed. Allowed types: PDF, DOCX, XLSX, PNG, JPG.");
-            }
-
-            try
-            {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                // Create a safe unique filename
-                var safeFileName = $"{claimId}_{DateTime.UtcNow:yyyyMMddHHmmssfff}_{Path.GetFileName(file.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, safeFileName);
-
-                await using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                // Create document record
-                var doc = new Document
-                {
-                    ClaimId = claimId,
-                    FileName = safeFileName,
-                    FilePath = "/uploads/" + safeFileName,
-                    FileType = ext,
-                    FileSize = file.Length,
-                    UploadDate = DateTime.UtcNow,
-                    UploadedBy = uploadedBy,
-                    Description = description
-                };
-
-                _db.Documents.Add(doc);
-                await _db.SaveChangesAsync();
-
-                return (true, null);
-            }
-            catch (Exception ex)
-            {
-                return (false, "Failed to save file: " + ex.Message);
-            }
-        }
-
-        private int UserIdFromTempData()
-        {
-            if (int.TryParse(TempData["UserId"]?.ToString(), out var id))
-            {
-                return id;
-            }
-            return 0;
         }
     }
 }

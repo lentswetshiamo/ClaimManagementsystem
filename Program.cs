@@ -1,5 +1,4 @@
 using ClaimManagementsystem.Data;
-using ClaimManagementsystem.Data.Repository;
 using ClaimManagementsystem.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,42 +6,57 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 
-// DbContext
+// Configure database connection
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Server=(localdb)\\mssqllocaldb;Database=ClaimManagementDB;Trusted_Connection=true;MultipleActiveResultSets=true"));
 
-// Repositories
-builder.Services.AddScoped<IAuditRepository, AuditRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Register repositories
 builder.Services.AddScoped<IClaimRepository, ClaimRepository>();
+builder.Services.AddScoped<UserRepository>();
 
-// Application services
-builder.Services.AddScoped<AuthService>();
+// Register services
 builder.Services.AddScoped<ClaimService>();
-builder.Services.AddScoped<WorkflowService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<WorkflowService>();
 builder.Services.AddScoped<DocumentService>();
-builder.Services.AddScoped<AuditService>(); // depends on IAuditRepository
 
-// Session & HttpContext
-builder.Services.AddDistributedMemoryCache();
+// Configure session for authentication
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+// Add HttpContextAccessor for accessing HttpContext in services
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Initialize database and seed data
+using (var scope = app.Services.CreateScope())
 {
-    app.UseDeveloperExceptionPage();
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<DatabaseContext>();
+        context.Database.EnsureCreated(); // For development - creates DB if not exists
+        // For production, use: context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while creating the database.");
+    }
 }
-else
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
@@ -52,13 +66,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
 app.UseSession();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=LoginPage}/{id?}");
-
-app.MapRazorPages();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

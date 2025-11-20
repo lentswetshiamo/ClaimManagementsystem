@@ -1,108 +1,83 @@
-﻿using System.Reflection.Metadata;
-using ClaimManagementsystem.Models;
-
-namespace ClaimManagementsystem.Services
+﻿namespace ClaimManagementsystem.Services
 {
     public class DocumentService
     {
-        public readonly List<Document> _documents;
-        public readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
-        public readonly string[] _allowedExtensions = { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png" };
+        private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<DocumentService> _logger;
 
-            public DocumentService()
+        public DocumentService(IWebHostEnvironment environment, ILogger<DocumentService> logger)
+        {
+            _environment = environment;
+            _logger = logger;
+        }
+
+        public async Task<string> UploadDocumentAsync(IFormFile file, int claimId)
+        {
+            if (file == null || file.Length == 0)
             {
-                _documents = new List<Document>();
+                throw new ArgumentException("File is empty or null");
             }
 
-            public DocumentValidationResult ValidateDocument(IFormFile file)
+            // Validate file type
+            var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".txt", ".jpg", ".jpeg", ".png" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(fileExtension))
             {
-                var result = new DocumentValidationResult { IsValid = true, Errors = new string[0], Warnings = new string[0] };
-                var errors = new List<string>();
-                var warnings = new List<string>();
-
-                // Check file size
-                if (file.Length > _maxFileSize)
-                {
-                    errors.Add($"File size exceeds maximum allowed size of {_maxFileSize / 1024 / 1024}MB");
-                }
-
-                // Check file extension
-                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (!_allowedExtensions.Contains(extension))
-                {
-                    errors.Add($"File type not allowed. Allowed types: {string.Join(", ", _allowedExtensions)}");
-                }
-
-                // Check for potential security issues
-                if (file.FileName.Contains("..") || file.FileName.Contains("/") || file.FileName.Contains("\\"))
-                {
-                    errors.Add("Invalid file name");
-                }
-
-                result.IsValid = !errors.Any();
-                result.Errors = errors.ToArray();
-                result.Warnings = warnings.ToArray();
-
-                return result;
+                throw new ArgumentException("Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG");
             }
 
-            public async Task<Document> SaveDocumentAsync(IFormFile file, int claimId, int userId, string description)
+            // Validate file size (max 5MB)
+            if (file.Length > 5 * 1024 * 1024)
             {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                var document = new Document
-                {
-                    DocumentId = _documents.Count + 1,
-                    ClaimId = claimId,
-                    FileName = file.FileName,
-                    FilePath = $"/uploads/{uniqueFileName}",
-                    FileType = Path.GetExtension(file.FileName),
-                    FileSize = file.Length,
-                    UploadDate = DateTime.Now,
-                    UploadedBy = userId,
-                    Description = description
-                };
-
-                _documents.Add(document);
-                return document;
+                throw new ArgumentException("File size exceeds 5MB limit");
             }
 
-            public List<Document> GetClaimDocuments(int claimId)
+            // Create uploads directory if it doesn't exist
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "claims");
+            if (!Directory.Exists(uploadsFolder))
             {
-                return _documents.Where(d => d.ClaimId == claimId).ToList();
+                Directory.CreateDirectory(uploadsFolder);
             }
 
-            public Document GetDocument(int documentId)
+            // Generate unique filename
+            var uniqueFileName = $"{claimId}_{Guid.NewGuid()}{fileExtension}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // Save file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                return _documents.FirstOrDefault(d => d.DocumentId == documentId);
+                await file.CopyToAsync(fileStream);
             }
 
-            public bool DeleteDocument(int documentId)
+            _logger.LogInformation($"Document uploaded successfully: {uniqueFileName}");
+            return $"/uploads/claims/{uniqueFileName}";
+        }
+
+        public bool DeleteDocument(string documentPath)
+        {
+            try
             {
-                var document = _documents.FirstOrDefault(d => d.DocumentId == documentId);
-                if (document != null)
+                var filePath = Path.Combine(_environment.WebRootPath, documentPath.TrimStart('/'));
+                if (File.Exists(filePath))
                 {
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", document.FilePath.TrimStart('/'));
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
-                    _documents.Remove(document);
+                    File.Delete(filePath);
+                    _logger.LogInformation($"Document deleted successfully: {documentPath}");
                     return true;
                 }
                 return false;
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting document: {documentPath}");
+                return false;
+            }
         }
+
+        public bool DocumentExists(string documentPath)
+        {
+            var filePath = Path.Combine(_environment.WebRootPath, documentPath.TrimStart('/'));
+            return File.Exists(filePath);
+        }
+    }
 }

@@ -1,189 +1,117 @@
 ﻿@model ClaimManagementsystem.Models.Claim
+
 @{
-    Layout = "_Layout";
-    const long MaxBytes = 5 * 1024 * 1024;
-}
-@section Styles {
-    <style>
-        .claim-card { max-width: 820px; margin: 18px auto; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.08); border-radius: 8px; background: #ffffff; }
-        .claim-header { background: linear-gradient(90deg,#0d6efd,#6610f2); color: #fff; padding: 12px 16px; border-radius: 6px; margin-bottom: 18px; }
-        .primary-btn { background-color: #0d6efd; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; }
-        .primary-btn:disabled { opacity: .6; }
-        .field-note { font-size: .9rem; color: #6c757d; }
-        .file-name { font-size: .9rem; margin-top: 6px; }
-        .badge-status { font-size: .9rem; padding: .4rem .6rem; border-radius: 6px; }
-    </style>
+    ViewData["Title"] = "Submit Claim";
 }
 
-<div class="claim-card">
-    <div class="claim-header">
-        <h4 class="mb-0">Submit a Claim</h4>
-        <div class="field-note">Enter hours, rate and attach supporting documents. Total calculates automatically.</div>
-    </div>
+<link rel="stylesheet" href="~/css/claims.css" />
 
-    @* Show TempData messages *@
-    @if (TempData["Message"] != null)
-    {
-        <div class="alert alert-success">@TempData["Message"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Submit New Claim</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
-    <form asp-controller="Claim" asp-action="Submit" method="post" enctype="multipart/form-data" id="claimForm" novalidate>
-        @Html.AntiForgeryToken()
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label asp-for="Month" class="form-label">Month</label>
-                <select asp-for="Month" class="form-select" required>
-                    <option value="">Select month</option>
-                    <option>January</option><option>February</option><option>March</option><option>April</option>
-                    <option>May</option><option>June</option><option>July</option><option>August</option>
-                    <option>September</option><option>October</option><option>November</option><option>December</option>
-                </select>
-                <span class="text-danger" data-valmsg-for="Month"></span>
-            </div>
+                    <form asp-action="Submit" method="post" id="claimForm">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <div class="col-md-6">
-                <label asp-for="Year" class="form-label">Year</label>
-                <input asp-for="Year" class="form-control" type="number" min="2000" max="2100" required />
-                <span class="text-danger" data-valmsg-for="Year"></span>
-            </div>
+                        <div class="form-section">
+                            <h5 class="form-section-title">Claim Information</h5>
 
-            <div class="col-md-6">
-                <label asp-for="TotalHours" class="form-label">Hours worked</label>
-                <input asp-for="TotalHours" class="form-control" id="hoursInput" type="number" step="0.25" min="0" placeholder="e.g., 2.5" required />
-                <span class="text-danger" data-valmsg-for="TotalHours"></span>
-            </div>
+                            <div class="mb-3">
+                                <label asp-for="ClaimType" class="form-label">Claim Type <span class="text-danger">*</span></label>
+                                <input asp-for="ClaimType" class="form-control" id="ClaimType" placeholder="e.g., Lecture, Tutorial, Marking" />
+                                <span asp-validation-for="ClaimType" class="text-danger"></span>
+                            </div>
 
-            <div class="col-md-6">
-                <label asp-for="HourlyRate" class="form-label">Hourly rate (USD)</label>
-                <input asp-for="HourlyRate" class="form-control" id="rateInput" type="number" step="0.01" min="0" placeholder="e.g., 20.00" required />
-                <span class="text-danger" data-valmsg-for="HourlyRate"></span>
-            </div>
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea asp-for="Description" class="form-control" id="Description" rows="4" placeholder="Provide detailed description of your claim (minimum 10 characters)"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Total amount (calculated)</label>
-                <input asp-for="TotalAmount" class="form-control" id="totalAmount" readonly />
-            </div>
+                            <div class="mb-3">
+                                <label asp-for="LecturerId" class="form-label">Lecturer <span class="text-danger">*</span></label>
+                                <select asp-for="LecturerId" class="form-select" id="LecturerId">
+                                    <option value="">-- Select Lecturer --</option>
+                                    @if (ViewBag.Lecturers != null)
+                                    {
+                                        @foreach (var lecturer in ViewBag.Lecturers)
+                                        {
+                                            <option value="@lecturer.Id">@lecturer.LecturerName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="LecturerId" class="text-danger"></span>
+                            </div>
+                        </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Claim type</label>
-                <select id="claimType" class="form-select">
-                    <option value="">Select type</option>
-                    <option>Lecture</option>
-                    <option>Preparation</option>
-                    <option>Marking</option>
-                    <option>Other</option>
-                </select>
-                <div class="field-note">Claim type will be combined with notes on submit.</div>
-            </div>
+                        <div class="form-section">
+                            <h5 class="form-section-title">Calculation Details</h5>
 
-            <div class="col-12">
-                <label asp-for="Comments" class="form-label">Additional notes / description</label>
-                <textarea asp-for="Comments" class="form-control" id="notesInput" rows="4" placeholder="Add any details, e.g., topic, location, attendees..."></textarea>
-                <span class="text-danger" data-valmsg-for="Comments"></span>
-            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="HoursWorked" class="form-label">
+                                        Hours Worked <span class="text-danger">*</span>
+                                        <i class="fas fa-info-circle tooltip-icon" title="Enter the number of hours worked (0-1000)"></i>
+                                    </label>
+                                    <input asp-for="HoursWorked" type="number" step="0.01" class="form-control" id="HoursWorked" placeholder="0.00" />
+                                    <span asp-validation-for="HoursWorked" class="text-danger"></span>
+                                </div>
 
-            <div class="col-12">
-                <label class="form-label">Supporting document (optional)</label>
-                <input type="file" name="upload" id="uploadFile" class="form-control" accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg" />
-                <div class="file-name text-muted" id="selectedFileName">No file selected (allowed: .pdf, .docx, .xlsx, .png, .jpg). Max 5 MB.</div>
-                <div class="text-danger" id="fileError" style="display:none;"></div>
-            </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="HourlyRate" class="form-label">
+                                        Hourly Rate (R) <span class="text-danger">*</span>
+                                        <i class="fas fa-info-circle tooltip-icon" title="Enter your hourly rate (0-10000)"></i>
+                                    </label>
+                                    <input asp-for="HourlyRate" type="number" step="0.01" class="form-control" id="HourlyRate" placeholder="0.00" />
+                                    <span asp-validation-for="HourlyRate" class="text-danger"></span>
+                                </div>
+                            </div>
 
-            <div class="col-12 d-flex justify-content-end">
-                <button type="submit" class="primary-btn" id="submitBtn">Submit claim</button>
+                            <div class="total-amount-display">
+                                <div class="total-amount-label">Total Claim Amount</div>
+                                <div class="total-amount-value" id="totalAmountDisplay">R 0.00</div>
+                                <input asp-for="TotalAmount" type="hidden" id="TotalAmount" />
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitClaimBtn" disabled>
+                                <i class="fas fa-paper-plane"></i> Submit Claim
+                            </button>
+                            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
-    <script>
-        (function () {
-            const hoursEl = document.getElementById('hoursInput');
-            const rateEl = document.getElementById('rateInput');
-            const totalEl = document.getElementById('totalAmount');
-            const form = document.getElementById('claimForm');
-            const fileInput = document.getElementById('uploadFile');
-            const fileNameEl = document.getElementById('selectedFileName');
-            const fileErrorEl = document.getElementById('fileError');
-            const maxBytes = @MaxBytes;
-            const allowed = ['.pdf', '.docx', '.xlsx', '.png', '.jpg', '.jpeg'];
-
-            function formatMoney(v) {
-                return parseFloat(v || 0).toFixed(2);
-            }
-
-            function recalc() {
-                const h = parseFloat(hoursEl.value) || 0;
-                const r = parseFloat(rateEl.value) || 0;
-                const total = h * r;
-                totalEl.value = formatMoney(total);
-            }
-
-            hoursEl?.addEventListener('input', recalc);
-            rateEl?.addEventListener('input', recalc);
-
-            fileInput?.addEventListener('change', function (e) {
-                fileErrorEl.style.display = 'none';
-                fileErrorEl.textContent = '';
-                const f = fileInput.files && fileInput.files[0];
-                if (!f) {
-                    fileNameEl.textContent = 'No file selected (allowed: .pdf, .docx, .xlsx, .png, .jpg). Max 5 MB.';
-                    return;
-                }
-                const name = f.name || '';
-                const ext = name.substring(name.lastIndexOf('.')).toLowerCase();
-                if (f.size > maxBytes) {
-                    fileErrorEl.textContent = 'File too large. Maximum allowed: ' + (maxBytes / (1024*1024)) + ' MB.';
-                    fileErrorEl.style.display = 'block';
-                    fileInput.value = '';
-                    fileNameEl.textContent = 'No file selected';
-                    return;
-                }
-                if (!allowed.includes(ext)) {
-                    fileErrorEl.textContent = 'Invalid file type. Allowed: ' + allowed.join(', ');
-                    fileErrorEl.style.display = 'block';
-                    fileInput.value = '';
-                    fileNameEl.textContent = 'No file selected';
-                    return;
-                }
-                fileNameEl.textContent = 'Selected: ' + name;
-            });
-
-            form?.addEventListener('submit', function (e) {
-                // Client-side validation
-                fileErrorEl.style.display = 'none';
-                const h = parseFloat(hoursEl.value) || 0;
-                const r = parseFloat(rateEl.value) || 0;
-                if (h <= 0 || r <= 0) {
-                    e.preventDefault();
-                    alert('Please enter valid hours and hourly rate greater than zero.');
-                    return;
-                }
-
-                // combine Claim Type and Notes into Comments (server binds to Comments)
-                const claimType = document.getElementById('claimType')?.value || '';
-                const notes = document.getElementById('notesInput')?.value || '';
-                const combined = (claimType ? ('Type: ' + claimType + (notes ? ' — ' : '')) : '') + notes;
-                document.querySelector('[name="Comments"]').value = combined;
-
-                // file re-check (double-check)
-                const f = fileInput.files && fileInput.files[0];
-                if (f) {
-                    const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
-                    if (f.size > maxBytes || !allowed.includes(ext)) {
-                        e.preventDefault();
-                        alert('Invalid file selected. Check type and size.');
-                    }
-                }
-            });
-
-            // initial calc if fields prefilled
-            recalc();
-        })();
-    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/claim.js"></script>
 }

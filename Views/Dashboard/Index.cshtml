@@ -1,17 +1,200 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
+    var userName = Context.Session.GetString("UserName") ?? "Guest";
+    var userRole = Context.Session.GetString("UserRole") ?? "Lecturer";
 }
 
-<div class="container text-center">
-    <h2>Welcome to the Dashboard</h2>
-    <p>Select an option below:</p>
+<link rel="stylesheet" href="~/css/claims.css" />
 
-    <div class="d-grid gap-2 col-6 mx-auto mt-4">
-        <a asp-controller="Claim" asp-action="Submit" class="btn btn-primary">Submit Claim</a>
-        <a asp-controller="Claim" asp-action="UploadDocuments" class="btn btn-secondary">Upload Documents</a>
-        <a asp-controller="Claim" asp-action="TrackStatus" class="btn btn-info">Track Status</a>
-        <a asp-controller="Claim" asp-action="VerifyClaims" class="btn btn-warning">Verify Claims</a>
-        <a asp-controller="Claim" asp-action="ApproveClaim" class="btn btn-success">Approve Claims</a>
-        <a asp-controller="Claim" asp-action="ViewClaims" class="btn btn-dark">View Claims</a>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-tachometer-alt"></i> Welcome, @userName!
+                    </h3>
+                    <p class="mb-0"><strong>Role:</strong> @userRole</p>
+                </div>
+            </div>
+        </div>
     </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (userRole == "Lecturer")
+    {
+        <div class="row">
+            <div class="col-12 mb-3">
+                <h4><i class="fas fa-user-graduate"></i> Lecturer Actions</h4>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-invoice-dollar dashboard-card-icon text-primary"></i>
+                        <h5 class="card-title">Submit Claim</h5>
+                        <p class="card-text">Submit a new claim with auto-calculated totals</p>
+                        <a asp-controller="Claim" asp-action="Submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Submit New Claim
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list-alt dashboard-card-icon text-info"></i>
+                        <h5 class="card-title">Track Claims</h5>
+                        <p class="card-text">View and track the status of your submitted claims</p>
+                        <a asp-controller="Claim" asp-action="TrackStatus" class="btn btn-info">
+                            <i class="fas fa-search"></i> Track Status
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cloud-upload-alt dashboard-card-icon text-secondary"></i>
+                        <h5 class="card-title">Upload Documents</h5>
+                        <p class="card-text">Upload supporting documents for your claims</p>
+                        <a asp-controller="Claim" asp-action="UploadDocuments" class="btn btn-secondary">
+                            <i class="fas fa-upload"></i> Upload Documents
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (userRole == "Programme Coordinator" || userRole == "Academic Manager")
+    {
+        <div class="row">
+            <div class="col-12 mb-3">
+                <h4><i class="fas fa-user-tie"></i> @userRole Actions</h4>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list dashboard-card-icon text-primary"></i>
+                        <h5 class="card-title">View All Claims</h5>
+                        <p class="card-text">View, filter, and manage all submitted claims</p>
+                        <a asp-controller="Claim" asp-action="ViewClaims" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View Claims
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle dashboard-card-icon text-success"></i>
+                        <h5 class="card-title">Approve Claims</h5>
+                        <p class="card-text">Approve or reject claims with bulk actions</p>
+                        <a asp-controller="Claim" asp-action="ViewClaims" class="btn btn-success">
+                            <i class="fas fa-thumbs-up"></i> Manage Approvals
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-check dashboard-card-icon text-info"></i>
+                        <h5 class="card-title">Verify Claims</h5>
+                        <p class="card-text">Verify claims before final approval</p>
+                        <a asp-controller="Claim" asp-action="ViewClaims" class="btn btn-info">
+                            <i class="fas fa-check-double"></i> Verify Claims
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (userRole == "HR")
+    {
+        <div class="row">
+            <div class="col-12 mb-3">
+                <h4><i class="fas fa-building"></i> HR Actions</h4>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line dashboard-card-icon text-primary"></i>
+                        <h5 class="card-title">HR Dashboard</h5>
+                        <p class="card-text">View approved claims and statistics</p>
+                        <a asp-controller="HR" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt"></i> Go to HR Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-invoice dashboard-card-icon text-success"></i>
+                        <h5 class="card-title">Monthly Report</h5>
+                        <p class="card-text">Generate and view monthly claims reports</p>
+                        <a asp-controller="HR" asp-action="MonthlyReport" class="btn btn-success">
+                            <i class="fas fa-calendar-alt"></i> View Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-download dashboard-card-icon text-info"></i>
+                        <h5 class="card-title">Export Data</h5>
+                        <p class="card-text">Export claims data to CSV format</p>
+                        <a asp-controller="HR" asp-action="ExportCsv" class="btn btn-info">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-bar dashboard-card-icon text-warning"></i>
+                        <h5 class="card-title">Statistics</h5>
+                        <p class="card-text">View detailed system statistics</p>
+                        <a asp-controller="HR" asp-action="Statistics" class="btn btn-warning">
+                            <i class="fas fa-chart-pie"></i> View Statistics
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="dashboard-card card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list dashboard-card-icon text-secondary"></i>
+                        <h5 class="card-title">View All Claims</h5>
+                        <p class="card-text">View all approved claims</p>
+                        <a asp-controller="Claim" asp-action="ViewClaims" class="btn btn-secondary">
+                            <i class="fas fa-eye"></i> View Claims
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+}

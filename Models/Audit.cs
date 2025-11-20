@@ -1,57 +1,29 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ClaimManagementsystem.Models
 {
-    public class AuditLog
+    public class Audit
     {
-        [Key]
-        public int AuditLogId { get; set; }
+        public int Id { get; set; }
 
-        public string Entity { get; set; }
-        public int EntityId { get; set; }
-        public string Action { get; set; }
-        public string OldValues { get; set; }
-        public string NewValues { get; set; }
+        [Required]
+        public int ClaimId { get; set; }
 
-        // persisted timestamp
-        public DateTime UpdatedOn { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string Action { get; set; } = string.Empty; // Created, Updated, Verified, Approved, Rejected
 
-        // additional fields used by views
-        public int UpdatedBy { get; set; }
-        public string UserName { get; set; }
-        public string IpAddress { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string PerformedBy { get; set; } = string.Empty;
 
-        // Optional metadata used by UI; keep persisted columns for Level/Message
-        public string Level { get; set; }    // e.g. "Info", "Warning", "Error"
-        public string Message { get; set; }  // short message for UI
+        [Required]
+        public DateTime Timestamp { get; set; } = DateTime.Now;
 
-        // Provide a non-mapped property the views expect (maps to UpdatedOn)
-        [NotMapped]
-        public DateTime Timestamp => UpdatedOn;
-    }
+        [StringLength(500)]
+        public string Details { get; set; } = string.Empty;
 
-    public class SecurityEvent
-    {
-        [Key]
-        public int SecurityEventId { get; set; }
-        public string EventType { get; set; }
-        public string Description { get; set; }
-        public string Severity { get; set; }
-        public DateTime EventDate { get; set; }
-        public int UserId { get; set; }
-        public string IpAddress { get; set; }
-    }
-
-    public class SystemLog
-    {
-        [Key]
-        public int SystemLogId { get; set; }
-        public string Level { get; set; }
-        public string Message { get; set; }
-        public string Exception { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string Source { get; set; }
+        [StringLength(100)]
+        public string IpAddress { get; set; } = string.Empty;
     }
 }

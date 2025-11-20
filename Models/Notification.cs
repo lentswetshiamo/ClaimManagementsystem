@@ -3,38 +3,29 @@
 namespace ClaimManagementsystem.Models
 {
     public class Notification
-        {
-            [Key]
-            public int NotificationId { get; set; }
-            public int UserId { get; set; }
-            public string Title { get; set; }
-            public string Message { get; set; }
-            public string Type { get; set; }
-            public bool IsRead { get; set; }
-            public DateTime CreatedDate { get; set; }
-            public string ActionUrl { get; set; }
-        }
+    {
+        public int Id { get; set; }
 
-        public class EmailTemplate
-        {
-            [Key]
-            public int EmailTemplateId { get; set; }
-            public string TemplateName { get; set; }
-            public string Subject { get; set; }
-            public string Body { get; set; }
-            public bool IsActive { get; set; }
-        }
+        [Required]
+        public int UserId { get; set; }
 
-        public class NotificationPreference
-        {
-            [Key]
-            public int NotificationPreferenceId { get; set; }
-            public int UserId { get; set; }
-            public bool EmailNotifications { get; set; }
-            public bool PushNotifications { get; set; }
-            public bool ClaimSubmitted { get; set; }
-            public bool ClaimApproved { get; set; }
-            public bool ClaimRejected { get; set; }
-            public bool SystemUpdates { get; set; }
-        }
+        [Required]
+        public int ClaimId { get; set; }
+
+        [Required]
+        [StringLength(200)]
+        public string Title { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(1000)]
+        public string Message { get; set; } = string.Empty;
+
+        public bool IsRead { get; set; } = false;
+
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [StringLength(50)]
+        public string Type { get; set; } = "Info"; // Info, Success, Warning, Error
     }
+}

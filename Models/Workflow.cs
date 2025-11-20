@@ -2,47 +2,31 @@
 
 namespace ClaimManagementsystem.Models
 {
-        public class WorkflowState
-        {
-            [Key]
-            public int WorkflowStateId { get; set; }
-            public string State { get; set; }
-            public string Description { get; set; }
-            public DateTime Timestamp { get; set; }
-            public string User { get; set; }
-        }
+    public class Workflow
+    {
+        public int Id { get; set; }
 
-        public class Approval
-        {
-            [Key]
-            public int ApprovalId { get; set; }
-            public int ClaimId { get; set; }
-            public int ApproverId { get; set; }
-            public string ApproverRole { get; set; }
-            public string Comments { get; set; }
-            public DateTime RequestDate { get; set; }
-            public DateTime? ResponseDate { get; set; }
-        }
+        [Required]
+        public int ClaimId { get; set; }
 
-        public class BusinessRule
-        {
-            [Key]
-            public int BusinessRuleId { get; set; }
-            public string RuleName { get; set; }
-            public string Description { get; set; }
-            public string Condition { get; set; }
-            public string Action { get; set; }
-            public bool IsActive { get; set; }
-        }
+        [Required]
+        [StringLength(50)]
+        public string CurrentStage { get; set; } = string.Empty; // Submitted, UnderReview, Verified, Approved, Rejected
 
-        public class WorkflowConfiguration
-        {
-            [Key]
-            public int WorkflowConfigurationId { get; set; }
-            public string WorkflowType { get; set; }
-            public int ApprovalLevels { get; set; }
-            public string RequiredRoles { get; set; }
-            public TimeSpan EscalationTime { get; set; }
-            public bool AutoApprovalEnabled { get; set; }
-        }
+        [StringLength(100)]
+        public string? AssignedTo { get; set; }
+
+        [Required]
+        public DateTime StageStartDate { get; set; } = DateTime.Now;
+
+        public DateTime? StageEndDate { get; set; }
+
+        [StringLength(500)]
+        public string Notes { get; set; } = string.Empty;
+
+        public bool RequiresAction { get; set; } = true;
+
+        [StringLength(100)]
+        public string? NextApprover { get; set; }
     }
+}

@@ -1,138 +1,45 @@
-﻿using ClaimManagementsystem.Models;
+﻿using ClaimManagementsystem.Data;
 
 namespace ClaimManagementsystem.Services
 {
     public class AuthService
+    {
+        private readonly UserRepository _userRepository;
+
+        public AuthService(UserRepository userRepository)
         {
-            private readonly List<User> _users;
+            _userRepository = userRepository;
+        }
 
-            public AuthService()
-            {
-                _users = new List<User>
-            {
-                new User {
-                    UserId = 1,
-                    Name = "Tshiamo Lentswe",
-                    Email = "tshiamo@university.ac.za",
-                    Password = "password",
-                    Role = "Lecturer",
-                    HourlyRate = 350.00m,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                },
-                new User {
-                    UserId = 2,
-                    Name = "Prof. Sarah Johnson",
-                    Email = "coordinator@university.ac.za",
-                    Password = "password",
-                    Role = "Coordinator",
-                    HourlyRate = 0,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                },
-                new User {
-                    UserId = 3,
-                    Name = "Dr. Michael Brown",
-                    Email = "manager@university.ac.za",
-                    Password = "password",
-                    Role = "Manager",
-                    HourlyRate = 0,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                },
-                new User {
-                    UserId = 4,
-                    Name = "Admin User",
-                    Email = "admin@university.ac.za",
-                    Password = "password",
-                    Role = "Admin",
-                    HourlyRate = 0,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                },
-                new User {
-                    UserId = 5,
-                    Name = "Ntokozo Nhleko",
-                    Email = "ntokozo@university.ac.za",
-                    Password = "password",
-                    Role = "Lecturer",
-                    HourlyRate = 320.00m,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                },
-                new User {
-                    UserId = 6,
-                    Name = "Deshi Mfolo",
-                    Email = "deshi@university.ac.za",
-                    Password = "password",
-                    Role = "Lecturer",
-                    HourlyRate = 340.00m,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                },
-                new User {
-                    UserId = 7,
-                    Name = "Kamogelo Lentswe",
-                    Email = "kamogelo@university.ac.za",
-                    Password = "password",
-                    Role = "Lecturer",
-                    HourlyRate = 330.00m,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                }
-            };
-            }
+        public async Task<Models.User?> ValidateUserAsync(string email, string password)
+        {
+            return await _userRepository.ValidateUserAsync(email, password);
+        }
 
-            public User Authenticate(string email, string password)
-            {
-                return _users.FirstOrDefault(u =>
-                    u.Email == email &&
-                    u.Password == password &&
-                    u.IsActive);
-            }
+        public async Task<Models.User?> GetUserByEmailAsync(string email)
+        {
+            return await _userRepository.GetUserByEmailAsync(email);
+        }
 
-            public User GetUserById(int userId)
-            {
-                return _users.FirstOrDefault(u => u.UserId == userId);
-            }
+        public async Task<Models.User> RegisterUserAsync(Models.User user)
+        {
+            // In production, hash the password before storing
+            return await _userRepository.AddUserAsync(user);
+        }
 
-            public List<User> GetAllUsers()
-            {
-                return _users.OrderBy(u => u.Name).ToList();
-            }
+        public async Task<bool> UserExistsAsync(string email)
+        {
+            return await _userRepository.UserExistsAsync(email);
+        }
 
-            public List<User> GetUsersByRole(string role)
-            {
-                return _users.Where(u => u.Role == role && u.IsActive).ToList();
-            }
+        public bool IsUserInRole(Models.User user, string role)
+        {
+            return user.Role.Equals(role, StringComparison.OrdinalIgnoreCase);
+        }
 
-            public bool ChangePassword(int userId, string oldPassword, string newPassword)
-            {
-                var user = _users.FirstOrDefault(u => u.UserId == userId);
-                if (user != null && user.Password == oldPassword)
-                {
-                    user.Password = newPassword;
-                    return true;
-                }
-                return false;
-            }
-
-            public void DeactivateUser(int userId)
-            {
-                var user = _users.FirstOrDefault(u => u.UserId == userId);
-                if (user != null)
-                {
-                    user.IsActive = false;
-                }
-            }
-
-            public void ActivateUser(int userId)
-            {
-                var user = _users.FirstOrDefault(u => u.UserId == userId);
-                if (user != null)
-                {
-                    user.IsActive = true;
-                }
-            }
+        public bool IsUserInAnyRole(Models.User user, params string[] roles)
+        {
+            return roles.Any(role => user.Role.Equals(role, StringComparison.OrdinalIgnoreCase));
         }
     }
+}

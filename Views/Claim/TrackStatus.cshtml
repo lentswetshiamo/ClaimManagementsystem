@@ -1,4 +1,12 @@
-﻿@model List<ClaimManagementsystem.Models.Claim>
+﻿@foreach (var claim in Model)
+{
+    <tr>
+        <td>@claim.ClaimType</td>
+        <td><span class="badge badge-@GetStatusClass(claim.Status)">@claim.Status</span></td>
+        <!-- ... -->
+    </tr>
+}
+@model List<ClaimManagementsystem.Models.Claim>
 @{
     ViewData["Title"] = "Approve Claim";
     
